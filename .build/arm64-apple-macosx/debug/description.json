@@ -32,7 +32,43 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/BatteryManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/BrightnessManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/VolumeManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/BatteryState.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/BrightnessState.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/IslandState.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/VolumeState.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SystemHUDController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/BatteryView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/BrightnessView.swift"
         },
         {
           "kind" : "file",
@@ -48,7 +84,15 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/VolumeView.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/Logger.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/SystemEventSimulator.swift"
         },
         {
           "kind" : "file",
@@ -81,11 +125,22 @@
       "objects" : [
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/AppState.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandFlowApp.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryManager.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessManager.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeManager.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryState.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessState.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandState.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeState.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemHUDController.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryView.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessView.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/CompactIslandView.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/ExpandedIslandView.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandContainerView.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeView.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/Logger.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemEventSimulator.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandPanel.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/ScreenManager.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/WindowConfiguration.swift.o",
@@ -153,7 +208,43 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessState.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemHUDController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessView.swift.o"
         },
         {
           "kind" : "file",
@@ -169,7 +260,15 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeView.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/Logger.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemEventSimulator.swift.o"
         },
         {
           "kind" : "file",
@@ -196,11 +295,22 @@
       "sources" : [
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/App/AppState.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/App/IslandFlowApp.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/BatteryManager.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/BrightnessManager.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/VolumeManager.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/BatteryState.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/BrightnessState.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/IslandState.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/VolumeState.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SystemHUDController.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/BatteryView.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/BrightnessView.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/CompactIslandView.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/ExpandedIslandView.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/IslandContainerView.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/VolumeView.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/Logger.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/SystemEventSimulator.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/IslandPanel.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/ScreenManager.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/WindowConfiguration.swift",
@@ -223,11 +333,22 @@
       "-c",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/App/AppState.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/App/IslandFlowApp.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/BatteryManager.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/BrightnessManager.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/VolumeManager.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/BatteryState.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/BrightnessState.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/IslandState.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/VolumeState.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SystemHUDController.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/BatteryView.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/BrightnessView.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/CompactIslandView.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/ExpandedIslandView.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/IslandContainerView.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/VolumeView.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/Logger.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/SystemEventSimulator.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/IslandPanel.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/ScreenManager.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/WindowConfiguration.swift",
@@ -334,7 +455,43 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/BatteryManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/BrightnessManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/VolumeManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/BatteryState.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/BrightnessState.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/IslandState.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/VolumeState.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SystemHUDController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/BatteryView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/BrightnessView.swift"
         },
         {
           "kind" : "file",
@@ -350,7 +507,15 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/VolumeView.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/Logger.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/SystemEventSimulator.swift"
         },
         {
           "kind" : "file",
@@ -384,6 +549,30 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessView.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/CompactIslandView.swift.o"
         },
         {
@@ -413,6 +602,26 @@
         {
           "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/ScreenManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemEventSimulator.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemHUDController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeView.swift.o"
         },
         {
           "kind" : "file",

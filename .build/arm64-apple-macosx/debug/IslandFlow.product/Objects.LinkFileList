@@ -1,4 +1,10 @@
 /Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/AppState.swift.o
+/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryManager.swift.o
+/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryState.swift.o
+/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryView.swift.o
+/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessManager.swift.o
+/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessState.swift.o
+/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessView.swift.o
 /Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/CompactIslandView.swift.o
 /Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/ExpandedIslandView.swift.o
 /Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandContainerView.swift.o
@@ -7,5 +13,10 @@
 /Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandState.swift.o
 /Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/Logger.swift.o
 /Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/ScreenManager.swift.o
+/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemEventSimulator.swift.o
+/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemHUDController.swift.o
+/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeManager.swift.o
+/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeState.swift.o
+/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeView.swift.o
 /Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/WindowConfiguration.swift.o
 /Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/WindowManager.swift.o

@@ -5,7 +5,6 @@ public struct IslandContainerView: View {
     
     public var body: some View {
         ZStack {
-            // Dark translucent material background
             RoundedRectangle(cornerRadius: appState.islandState.cornerRadius, style: .continuous)
                 .fill(.ultraThinMaterial)
                 .overlay(
@@ -25,14 +24,23 @@ public struct IslandContainerView: View {
                 )
                 .shadow(color: Color.black.opacity(0.4), radius: appState.isHovered ? 12 : 8, x: 0, y: 4)
             
-            // Content view switching depending on IslandState
             Group {
-                if appState.islandState == .compact {
+                switch appState.islandState {
+                case .compact:
                     CompactIslandView(appState: appState)
                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
-                } else {
+                case .expanded:
                     ExpandedIslandView(appState: appState)
                         .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                case .battery(let state):
+                    BatteryView(state: state)
+                        .transition(.opacity.combined(with: .scale(scale: 0.96)))
+                case .volume(let state):
+                    VolumeView(state: state)
+                        .transition(.opacity.combined(with: .scale(scale: 0.96)))
+                case .brightness(let state):
+                    BrightnessView(state: state)
+                        .transition(.opacity.combined(with: .scale(scale: 0.96)))
                 }
             }
         }
