@@ -14,16 +14,19 @@ public final class WindowManager: ObservableObject {
     public func setupWindow() {
         guard panel == nil else { return }
         
-        let initialSize = IslandState.compact.size
         let metrics = ScreenManager.shared.activeScreenMetrics()
+        let initialState: IslandState = metrics.hasNotch ? .notchCover : .compact
+        AppState.shared.islandState = initialState
         
-        // Calculate initial frame centered horizontally at top of active display
-        let originX = metrics.topCenterPoint.x - (initialSize.width / 2.0)
+        let initialSize = initialState.size
+        let originX = metrics.topFlushPoint.x - (initialSize.width / 2.0)
         let originY: CGFloat
-        if metrics.hasNotch {
-            originY = metrics.screenFrame.maxY - initialSize.height - 4
+        if initialState.isTopFlush {
+            originY = metrics.screenFrame.maxY - initialSize.height
+        } else if metrics.hasNotch {
+            originY = metrics.screenFrame.maxY - initialSize.height - 4.0
         } else {
-            originY = metrics.visibleFrame.maxY - initialSize.height - 4
+            originY = metrics.visibleFrame.maxY - initialSize.height - 4.0
         }
         
         let initialFrame = NSRect(
@@ -42,7 +45,6 @@ public final class WindowManager: ObservableObject {
         
         self.panel = panel
         
-        // Observe AppState changes to re-center panel smoothly when dimensions change
         AppState.shared.$islandState
             .receive(on: RunLoop.main)
             .sink { [weak self] newState in
@@ -59,18 +61,21 @@ public final class WindowManager: ObservableObject {
         let targetSize = state.size
         let metrics = ScreenManager.shared.activeScreenMetrics()
         
-        let newX = metrics.topCenterPoint.x - (targetSize.width / 2.0)
+        let newX = metrics.topFlushPoint.x - (targetSize.width / 2.0)
         let newY: CGFloat
-        if metrics.hasNotch {
-            newY = metrics.screenFrame.maxY - targetSize.height - 4
+        
+        if state.isTopFlush {
+            newY = metrics.screenFrame.maxY - targetSize.height
+        } else if metrics.hasNotch {
+            newY = metrics.screenFrame.maxY - targetSize.height - 4.0
         } else {
-            newY = metrics.visibleFrame.maxY - targetSize.height - 4
+            newY = metrics.visibleFrame.maxY - targetSize.height - 4.0
         }
         
         let newFrame = NSRect(x: newX, y: newY, width: targetSize.width, height: targetSize.height)
         
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.30
+            context.duration = 0.28
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             panel.animator().setFrame(newFrame, display: true)
         }

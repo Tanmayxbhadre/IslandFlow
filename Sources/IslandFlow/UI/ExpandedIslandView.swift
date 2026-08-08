@@ -22,13 +22,13 @@ public struct ExpandedIslandView: View {
                 
                 Spacer()
                 
-                Text("Phase 1")
-                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                Text("System HUD")
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(Color.white.opacity(0.15))
+                    .background(Color.cyan.opacity(0.2))
                     .cornerRadius(4)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.cyan)
             }
             
             Divider()

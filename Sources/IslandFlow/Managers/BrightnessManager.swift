@@ -43,7 +43,9 @@ public final class BrightnessManager: ObservableObject {
         }
     }
     
+    #if DEBUG
     public func simulateState(_ state: BrightnessState) {
         self.currentState = state
     }
+    #endif
 }

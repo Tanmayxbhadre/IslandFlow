@@ -38,18 +38,21 @@ public final class SystemHUDController: ObservableObject {
                 self?.handleSystemEvent(.brightness(brightnessState))
             }
             .store(in: &cancellables)
+            
+        MediaManager.shared.$currentState
+            .receive(on: RunLoop.main)
+            .sink { [weak self] mediaState in
+                self?.handleMediaStateChanged(mediaState)
+            }
+            .store(in: &cancellables)
     }
     
     public func handleSystemEvent(_ newState: IslandState) {
         let currentState = AppState.shared.islandState
         
-        if currentState == .expanded {
-            return
-        }
-        
-        if currentState.priority > newState.priority {
-            return
-        }
+        if case .expanded = currentState { return }
+        if case .mediaExpanded = currentState { return }
+        if currentState.priority > newState.priority { return }
         
         withAnimation(.spring(response: 0.30, dampingFraction: 0.78)) {
             AppState.shared.islandState = newState
@@ -58,12 +61,38 @@ public final class SystemHUDController: ObservableObject {
         collapseTask?.cancel()
         collapseTask = Task { @MainActor in
             try? await Task.sleep(nanoseconds: UInt64(autoCollapseDuration * 1_000_000_000))
-            if !Task.isCancelled {
+            if !Task.isCancelled && AppState.shared.islandState == newState {
                 withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                    if AppState.shared.islandState == newState {
-                        AppState.shared.islandState = .compact
+                    if MediaManager.shared.isMediaActive {
+                        AppState.shared.islandState = .mediaCompact(MediaManager.shared.currentState)
+                    } else {
+                        let metrics = ScreenManager.shared.activeScreenMetrics()
+                        AppState.shared.islandState = metrics.hasNotch ? .notchCover : .compact
                     }
                 }
+            }
+        }
+    }
+    
+    private func handleMediaStateChanged(_ mediaState: MediaState) {
+        let currentState = AppState.shared.islandState
+        
+        if currentState.priority >= 30 { return }
+        
+        if MediaManager.shared.isMediaActive {
+            if case .mediaExpanded = currentState {
+                withAnimation(.spring(response: 0.30, dampingFraction: 0.78)) {
+                    AppState.shared.islandState = .mediaExpanded(mediaState)
+                }
+            } else {
+                withAnimation(.spring(response: 0.30, dampingFraction: 0.78)) {
+                    AppState.shared.islandState = .mediaCompact(mediaState)
+                }
+            }
+        } else {
+            let metrics = ScreenManager.shared.activeScreenMetrics()
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                AppState.shared.islandState = metrics.hasNotch ? .notchCover : .compact
             }
         }
     }

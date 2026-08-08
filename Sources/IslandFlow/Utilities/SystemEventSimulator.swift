@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 
 @MainActor
@@ -31,4 +32,27 @@ public struct SystemEventSimulator {
         BrightnessManager.shared.simulateState(state)
         SystemHUDController.shared.handleSystemEvent(.brightness(state))
     }
+    
+    public static func simulateMediaPlaying() {
+        let state = MediaState(
+            title: "Somewhere Only We Know",
+            artist: "Gustixa",
+            album: "Chill Beats",
+            isPlaying: true,
+            currentTime: 23,
+            duration: 183,
+            sourceName: "Music"
+        )
+        MediaManager.shared.simulateMediaState(state)
+    }
+    
+    public static func simulateMediaStopped() {
+        let state = MediaState(
+            title: "No Track",
+            artist: "Unknown Artist",
+            isPlaying: false
+        )
+        MediaManager.shared.simulateMediaState(state)
+    }
 }
+#endif

@@ -30,6 +30,13 @@
     "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessManager.swiftdeps",
     "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessManager.dia"
   },
+  "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/MediaManager.swift": {
+    "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaManager.d",
+    "object": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaManager.swift.o",
+    "swiftmodule": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaManager.swiftdeps",
+    "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaManager.dia"
+  },
   "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/VolumeManager.swift": {
     "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeManager.d",
     "object": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeManager.swift.o",
@@ -57,6 +64,13 @@
     "swiftmodule": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandState~partial.swiftmodule",
     "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandState.swiftdeps",
     "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandState.dia"
+  },
+  "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/MediaState.swift": {
+    "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaState.d",
+    "object": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaState.swift.o",
+    "swiftmodule": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaState~partial.swiftmodule",
+    "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaState.swiftdeps",
+    "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaState.dia"
   },
   "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/VolumeState.swift": {
     "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeState.d",
@@ -93,6 +107,13 @@
     "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/CompactIslandView.swiftdeps",
     "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/CompactIslandView.dia"
   },
+  "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/CompactMediaView.swift": {
+    "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/CompactMediaView.d",
+    "object": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/CompactMediaView.swift.o",
+    "swiftmodule": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/CompactMediaView~partial.swiftmodule",
+    "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/CompactMediaView.swiftdeps",
+    "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/CompactMediaView.dia"
+  },
   "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/ExpandedIslandView.swift": {
     "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/ExpandedIslandView.d",
     "object": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/ExpandedIslandView.swift.o",
@@ -106,6 +127,13 @@
     "swiftmodule": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandContainerView~partial.swiftmodule",
     "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandContainerView.swiftdeps",
     "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandContainerView.dia"
+  },
+  "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/MediaView.swift": {
+    "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaView.d",
+    "object": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaView.swift.o",
+    "swiftmodule": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaView~partial.swiftmodule",
+    "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaView.swiftdeps",
+    "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaView.dia"
   },
   "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/VolumeView.swift": {
     "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeView.d",

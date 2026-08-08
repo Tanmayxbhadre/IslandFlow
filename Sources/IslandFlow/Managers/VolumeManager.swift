@@ -110,7 +110,9 @@ public final class VolumeManager: ObservableObject {
         }
     }
     
+    #if DEBUG
     public func simulateState(_ state: VolumeState) {
         self.currentState = state
     }
+    #endif
 }

@@ -63,7 +63,9 @@ public final class BatteryManager: ObservableObject {
         }
     }
     
+    #if DEBUG
     public func simulateState(_ state: BatteryState) {
         self.currentState = state
     }
+    #endif
 }

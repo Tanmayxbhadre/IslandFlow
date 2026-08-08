@@ -22,9 +22,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { @MainActor in
             WindowManager.shared.setupWindow()
             _ = SystemHUDController.shared
+            _ = MediaManager.shared
         }
         
-        Logger.app.info("IslandFlow Phase 2 launched successfully")
+        Logger.app.info("IslandFlow Phase 3.1 launched successfully")
     }
     
     private func setupStatusItem() {
@@ -41,9 +42,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         toggleStateItem.target = self
         menu.addItem(toggleStateItem)
         
+        #if DEBUG
         menu.addItem(NSMenuItem.separator())
         
-        let simMenuItem = NSMenuItem(title: "Simulate HUD Events", action: nil, keyEquivalent: "")
+        let simMenuItem = NSMenuItem(title: "Simulate HUD & Media Events", action: nil, keyEquivalent: "")
         let simMenu = NSMenu()
         
         let simVolItem = NSMenuItem(title: "Volume (72%)", action: #selector(simVolume), keyEquivalent: "")
@@ -66,8 +68,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         simLowBatItem.target = self
         simMenu.addItem(simLowBatItem)
         
+        simMenu.addItem(NSMenuItem.separator())
+        
+        let simMediaPlay = NSMenuItem(title: "Simulate Media Playing", action: #selector(simMediaPlayAction), keyEquivalent: "")
+        simMediaPlay.target = self
+        simMenu.addItem(simMediaPlay)
+        
+        let simMediaStop = NSMenuItem(title: "Simulate Media Stopped", action: #selector(simMediaStopAction), keyEquivalent: "")
+        simMediaStop.target = self
+        simMenu.addItem(simMediaStop)
+        
         simMenuItem.submenu = simMenu
         menu.addItem(simMenuItem)
+        #endif
         
         menu.addItem(NSMenuItem.separator())
         
@@ -84,6 +97,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
+    #if DEBUG
     @objc private func simVolume() {
         Task { @MainActor in SystemEventSimulator.simulateVolumeChange() }
     }
@@ -103,6 +117,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func simLowBattery() {
         Task { @MainActor in SystemEventSimulator.simulateLowBattery() }
     }
+    
+    @objc private func simMediaPlayAction() {
+        Task { @MainActor in SystemEventSimulator.simulateMediaPlaying() }
+    }
+    
+    @objc private func simMediaStopAction() {
+        Task { @MainActor in SystemEventSimulator.simulateMediaStopped() }
+    }
+    #endif
     
     @objc private func quitApp() {
         NSApp.terminate(nil)

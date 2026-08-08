@@ -6,17 +6,19 @@ public struct ScreenMetrics {
     public let visibleFrame: NSRect
     public let safeAreaTopInset: CGFloat
     public let hasNotch: Bool
+    public let notchWidth: CGFloat
     
-    public var topCenterPoint: CGPoint {
+    /// Top center point aligned flush with top edge of screen for notch-docked states
+    public var topFlushPoint: CGPoint {
         let x = screenFrame.origin.x + (screenFrame.width / 2.0)
-        let y: CGFloat
-        if hasNotch {
-            // Align with top screen bounds when notch exists
-            y = screenFrame.origin.y + screenFrame.height - safeAreaTopInset / 2.0
-        } else {
-            // Position slightly below menu bar on non-notch displays
-            y = screenFrame.origin.y + screenFrame.height - (screenFrame.height - visibleFrame.maxY) - 8.0
-        }
+        let y = screenFrame.origin.y + screenFrame.height
+        return CGPoint(x: x, y: y)
+    }
+    
+    /// Top center point positioned slightly below menu bar for floating states on non-notch screens
+    public var topFloatingPoint: CGPoint {
+        let x = screenFrame.origin.x + (screenFrame.width / 2.0)
+        let y = screenFrame.origin.y + screenFrame.height - (screenFrame.height - visibleFrame.maxY) - 4.0
         return CGPoint(x: x, y: y)
     }
 }
@@ -27,7 +29,6 @@ public final class ScreenManager {
     private init() {}
     
     public func activeScreenMetrics() -> ScreenMetrics {
-        // Find screen containing mouse cursor, or default to main screen
         let mouseLocation = NSEvent.mouseLocation
         let screen = NSScreen.screens.first { NSMouseInRect(mouseLocation, $0.frame, false) }
             ?? NSScreen.main
@@ -41,15 +42,26 @@ public final class ScreenManager {
         }
         
         let hasNotch = safeAreaTop > 0
+        var computedNotchWidth: CGFloat = 185.0
         
-        Logger.screen.debug("Active screen: \(screen.localizedName), Notch: \(hasNotch), SafeTop: \(safeAreaTop)")
+        if #available(macOS 12.0, *) {
+            if let topLeft = screen.auxiliaryTopLeftArea, let topRight = screen.auxiliaryTopRightArea {
+                let centerGap = screen.frame.width - (topLeft.width + topRight.width)
+                if centerGap > 0 {
+                    computedNotchWidth = centerGap
+                }
+            }
+        }
+        
+        Logger.screen.debug("Active screen: \(screen.localizedName), Notch: \(hasNotch), SafeTop: \(safeAreaTop), NotchWidth: \(computedNotchWidth)")
         
         return ScreenMetrics(
             targetScreen: screen,
             screenFrame: screen.frame,
             visibleFrame: screen.visibleFrame,
             safeAreaTopInset: safeAreaTop,
-            hasNotch: hasNotch
+            hasNotch: hasNotch,
+            notchWidth: computedNotchWidth
         )
     }
 }
