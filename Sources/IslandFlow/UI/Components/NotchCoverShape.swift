@@ -4,14 +4,14 @@ public struct NotchCoverShape: Shape {
     public var isTopFlush: Bool
     public var cornerRadius: CGFloat
     
-    public init(isTopFlush: Bool, cornerRadius: CGFloat) {
-        self.isTopFlush = isTopFlush
-        self.cornerRadius = cornerRadius
-    }
-    
     public var animatableData: CGFloat {
         get { cornerRadius }
         set { cornerRadius = newValue }
+    }
+    
+    public init(isTopFlush: Bool, cornerRadius: CGFloat) {
+        self.isTopFlush = isTopFlush
+        self.cornerRadius = cornerRadius
     }
     
     public func path(in rect: CGRect) -> Path {
@@ -19,26 +19,31 @@ public struct NotchCoverShape: Shape {
         let r = min(cornerRadius, min(rect.width / 2.0, rect.height / 2.0))
         
         if isTopFlush {
-            // Flat top edge against top screen bezel, smooth rounded bottom corners
+            // Liquid top-flush Bezier path anchored against screen top bezel
             path.move(to: CGPoint(x: rect.minX, y: rect.minY))
             path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
             path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - r))
-            path.addArc(
+            
+            // Continuous bottom-right curve
+            path.addRelativeArc(
                 center: CGPoint(x: rect.maxX - r, y: rect.maxY - r),
                 radius: r,
-                startAngle: Angle(degrees: 0),
-                endAngle: Angle(degrees: 90),
-                clockwise: false
+                startAngle: .degrees(0),
+                delta: .degrees(90)
             )
+            
             path.addLine(to: CGPoint(x: rect.minX + r, y: rect.maxY))
-            path.addArc(
+            
+            // Continuous bottom-left curve
+            path.addRelativeArc(
                 center: CGPoint(x: rect.minX + r, y: rect.maxY - r),
                 radius: r,
-                startAngle: Angle(degrees: 90),
-                endAngle: Angle(degrees: 180),
-                clockwise: false
+                startAngle: .degrees(90),
+                delta: .degrees(90)
             )
+            
             path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
+            path.closeSubpath()
         } else {
             path.addRoundedRect(in: rect, cornerSize: CGSize(width: r, height: r))
         }

@@ -89,7 +89,7 @@ public struct IslandContainerView: View {
             .clipShape(containerShape)
         }
         .frame(width: appState.islandState.size.width, height: appState.islandState.size.height, alignment: .top)
-        .animation(reduceMotion ? .linear(duration: 0.1) : .spring(response: 0.25, dampingFraction: 0.82), value: appState.islandState)
+        .animation(reduceMotion ? .linear(duration: 0.1) : .spring(response: 0.25, dampingFraction: 0.85), value: appState.islandState)
         .onHover { hovering in
             appState.setHovered(hovering)
             handleHoverChanged(hovering)
@@ -104,7 +104,7 @@ public struct IslandContainerView: View {
         hoverTask?.cancel()
         
         if hovering {
-            withAnimation(.spring(response: 0.25, dampingFraction: 0.82)) {
+            withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) {
                 if mediaManager.isMediaActive {
                     appState.islandState = .mediaExpanded(mediaManager.currentState)
                 } else if appState.islandState == .notchCover {
@@ -117,7 +117,7 @@ public struct IslandContainerView: View {
             hoverTask = Task { @MainActor in
                 try? await Task.sleep(nanoseconds: 200_000_000)
                 if !Task.isCancelled {
-                    withAnimation(.spring(response: 0.26, dampingFraction: 0.80)) {
+                    withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) {
                         if mediaManager.isMediaActive {
                             appState.islandState = .mediaCompact(mediaManager.currentState)
                         } else {
@@ -131,7 +131,7 @@ public struct IslandContainerView: View {
     }
     
     private func handleTapGesture() {
-        withAnimation(.spring(response: 0.26, dampingFraction: 0.80)) {
+        withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) {
             if mediaManager.isMediaActive {
                 if case .mediaExpanded = appState.islandState {
                     appState.islandState = .mediaCompact(mediaManager.currentState)
