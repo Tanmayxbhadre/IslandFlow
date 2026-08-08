@@ -16,13 +16,13 @@ public enum IslandState: Equatable {
         switch self {
         case .notchCover:
             let metrics = ScreenManager.shared.activeScreenMetrics()
-            let width = metrics.hasNotch ? max(metrics.notchWidth + 24.0, 205.0) : 150.0
-            let height = metrics.hasNotch ? max(metrics.safeAreaTopInset + 2.0, 34.0) : 32.0
+            let width = metrics.hasNotch ? max(metrics.notchWidth + 4.0, 180.0) : 140.0
+            let height = metrics.hasNotch ? max(metrics.safeAreaTopInset, 34.0) : 32.0
             return CGSize(width: width, height: height)
         case .hover:
             return CGSize(width: 240, height: 44)
         case .compact:
-            return CGSize(width: 150, height: 32)
+            return CGSize(width: 140, height: 32)
         case .expanded:
             return CGSize(width: 330, height: 110)
         case .mediaCompact:
@@ -41,7 +41,7 @@ public enum IslandState: Equatable {
     public var cornerRadius: CGFloat {
         switch self {
         case .notchCover:
-            return 12.0
+            return 14.0
         case .hover:
             return 16.0
         case .compact:

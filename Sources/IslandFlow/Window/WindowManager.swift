@@ -52,7 +52,8 @@ public final class WindowManager: ObservableObject {
             }
             .store(in: &cancellables)
             
-        Logger.window.info("Window setup complete at frame: \(String(describing: initialFrame))")
+        Logger.window.info("[IslandFlow] Screen: \(String(describing: metrics.screenFrame)), Visible: \(String(describing: metrics.visibleFrame)), SafeTop: \(metrics.safeAreaTopInset), NotchWidth: \(metrics.notchWidth)")
+        Logger.window.info("[IslandFlow] Window setup complete at frame: \(String(describing: initialFrame))")
     }
     
     public func updatePanelFrame(for state: IslandState) {
@@ -73,6 +74,8 @@ public final class WindowManager: ObservableObject {
         }
         
         let newFrame = NSRect(x: newX, y: newY, width: targetSize.width, height: targetSize.height)
+        
+        Logger.window.debug("[IslandFlow] State: \(String(describing: state)), TopFlush: \(state.isTopFlush), Frame: \(String(describing: newFrame))")
         
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.28
