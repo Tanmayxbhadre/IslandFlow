@@ -84,7 +84,7 @@ public struct IslandContainerView: View {
             }
         }
         .frame(width: appState.islandState.size.width, height: appState.islandState.size.height, alignment: .top)
-        .animation(reduceMotion ? .linear(duration: 0.1) : .spring(response: 0.30, dampingFraction: 0.78), value: appState.islandState)
+        .animation(reduceMotion ? .linear(duration: 0.1) : .spring(response: 0.26, dampingFraction: 0.82), value: appState.islandState)
         .onHover { hovering in
             appState.setHovered(hovering)
             handleHoverChanged(hovering)
@@ -99,18 +99,20 @@ public struct IslandContainerView: View {
         hoverTask?.cancel()
         
         if hovering {
-            withAnimation(.spring(response: 0.28, dampingFraction: 0.78)) {
+            withAnimation(.spring(response: 0.26, dampingFraction: 0.82)) {
                 if mediaManager.isMediaActive {
                     appState.islandState = .mediaExpanded(mediaManager.currentState)
                 } else if appState.islandState == .notchCover {
                     appState.islandState = .hover
+                } else if appState.islandState == .compact {
+                    appState.islandState = .expanded
                 }
             }
         } else {
             hoverTask = Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 350_000_000)
+                try? await Task.sleep(nanoseconds: 200_000_000)
                 if !Task.isCancelled {
-                    withAnimation(.spring(response: 0.32, dampingFraction: 0.76)) {
+                    withAnimation(.spring(response: 0.28, dampingFraction: 0.80)) {
                         if mediaManager.isMediaActive {
                             appState.islandState = .mediaCompact(mediaManager.currentState)
                         } else {
@@ -124,7 +126,7 @@ public struct IslandContainerView: View {
     }
     
     private func handleTapGesture() {
-        withAnimation(.spring(response: 0.32, dampingFraction: 0.76)) {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.80)) {
             if mediaManager.isMediaActive {
                 if case .mediaExpanded = appState.islandState {
                     appState.islandState = .mediaCompact(mediaManager.currentState)

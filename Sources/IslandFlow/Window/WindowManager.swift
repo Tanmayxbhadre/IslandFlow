@@ -20,14 +20,9 @@ public final class WindowManager: ObservableObject {
         
         let initialSize = initialState.size
         let originX = metrics.topFlushPoint.x - (initialSize.width / 2.0)
-        let originY: CGFloat
-        if initialState.isTopFlush {
-            originY = metrics.screenFrame.maxY - initialSize.height
-        } else if metrics.hasNotch {
-            originY = metrics.screenFrame.maxY - initialSize.height - 4.0
-        } else {
-            originY = metrics.visibleFrame.maxY - initialSize.height - 4.0
-        }
+        let originY: CGFloat = initialState.isTopFlush
+            ? metrics.screenFrame.maxY - initialSize.height
+            : metrics.visibleFrame.maxY - initialSize.height - 4.0
         
         let initialFrame = NSRect(
             x: originX,
@@ -52,7 +47,7 @@ public final class WindowManager: ObservableObject {
             }
             .store(in: &cancellables)
             
-        Logger.window.info("[IslandFlow] Screen: \(String(describing: metrics.screenFrame)), Visible: \(String(describing: metrics.visibleFrame)), SafeTop: \(metrics.safeAreaTopInset), NotchWidth: \(metrics.notchWidth)")
+        Logger.window.info("[IslandFlow] Screen: \(String(describing: metrics.screenFrame)), SafeTop: \(metrics.safeAreaTopInset), NotchWidth: \(metrics.notchWidth)")
         Logger.window.info("[IslandFlow] Window setup complete at frame: \(String(describing: initialFrame))")
     }
     
@@ -63,22 +58,16 @@ public final class WindowManager: ObservableObject {
         let metrics = ScreenManager.shared.activeScreenMetrics()
         
         let newX = metrics.topFlushPoint.x - (targetSize.width / 2.0)
-        let newY: CGFloat
-        
-        if state.isTopFlush {
-            newY = metrics.screenFrame.maxY - targetSize.height
-        } else if metrics.hasNotch {
-            newY = metrics.screenFrame.maxY - targetSize.height - 4.0
-        } else {
-            newY = metrics.visibleFrame.maxY - targetSize.height - 4.0
-        }
+        let newY: CGFloat = state.isTopFlush
+            ? metrics.screenFrame.maxY - targetSize.height
+            : metrics.visibleFrame.maxY - targetSize.height - 4.0
         
         let newFrame = NSRect(x: newX, y: newY, width: targetSize.width, height: targetSize.height)
         
         Logger.window.debug("[IslandFlow] State: \(String(describing: state)), TopFlush: \(state.isTopFlush), Frame: \(String(describing: newFrame))")
         
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.28
+            context.duration = 0.24
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             panel.animator().setFrame(newFrame, display: true)
         }

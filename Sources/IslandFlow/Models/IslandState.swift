@@ -57,13 +57,7 @@ public enum IslandState: Equatable {
     
     public var isTopFlush: Bool {
         let metrics = ScreenManager.shared.activeScreenMetrics()
-        guard metrics.hasNotch else { return false }
-        switch self {
-        case .notchCover, .hover, .mediaCompact, .battery, .volume, .brightness:
-            return true
-        case .compact, .expanded, .mediaExpanded:
-            return false
-        }
+        return metrics.hasNotch
     }
     
     public var priority: Int {
