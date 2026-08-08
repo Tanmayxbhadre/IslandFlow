@@ -7,15 +7,19 @@ public struct IslandContainerView: View {
     
     @State private var hoverTask: Task<Void, Never>?
     
+    private var isTopFlush: Bool {
+        appState.islandState.isTopFlush
+    }
+    
     private var containerShape: NotchCoverShape {
         NotchCoverShape(
-            isTopFlush: appState.islandState.isTopFlush,
+            isTopFlush: isTopFlush,
             cornerRadius: appState.islandState.cornerRadius
         )
     }
     
     public var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             if appState.islandState == .notchCover {
                 containerShape
                     .fill(Color.black)
@@ -37,7 +41,7 @@ public struct IslandContainerView: View {
                                 lineWidth: 1
                             )
                     )
-                    .shadow(color: Color.black.opacity(0.55), radius: appState.isHovered ? 12 : 6, x: 0, y: 3)
+                    .shadow(color: Color.black.opacity(0.50), radius: appState.isHovered ? 10 : 4, x: 0, y: 3)
             }
             
             VStack(spacing: 0) {
@@ -82,9 +86,10 @@ public struct IslandContainerView: View {
                 }
                 Spacer(minLength: 0)
             }
+            .clipShape(containerShape)
         }
         .frame(width: appState.islandState.size.width, height: appState.islandState.size.height, alignment: .top)
-        .animation(reduceMotion ? .linear(duration: 0.1) : .spring(response: 0.26, dampingFraction: 0.82), value: appState.islandState)
+        .animation(reduceMotion ? .linear(duration: 0.1) : .spring(response: 0.25, dampingFraction: 0.82), value: appState.islandState)
         .onHover { hovering in
             appState.setHovered(hovering)
             handleHoverChanged(hovering)
@@ -99,7 +104,7 @@ public struct IslandContainerView: View {
         hoverTask?.cancel()
         
         if hovering {
-            withAnimation(.spring(response: 0.26, dampingFraction: 0.82)) {
+            withAnimation(.spring(response: 0.25, dampingFraction: 0.82)) {
                 if mediaManager.isMediaActive {
                     appState.islandState = .mediaExpanded(mediaManager.currentState)
                 } else if appState.islandState == .notchCover {
@@ -112,7 +117,7 @@ public struct IslandContainerView: View {
             hoverTask = Task { @MainActor in
                 try? await Task.sleep(nanoseconds: 200_000_000)
                 if !Task.isCancelled {
-                    withAnimation(.spring(response: 0.28, dampingFraction: 0.80)) {
+                    withAnimation(.spring(response: 0.26, dampingFraction: 0.80)) {
                         if mediaManager.isMediaActive {
                             appState.islandState = .mediaCompact(mediaManager.currentState)
                         } else {
@@ -126,7 +131,7 @@ public struct IslandContainerView: View {
     }
     
     private func handleTapGesture() {
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.80)) {
+        withAnimation(.spring(response: 0.26, dampingFraction: 0.80)) {
             if mediaManager.isMediaActive {
                 if case .mediaExpanded = appState.islandState {
                     appState.islandState = .mediaCompact(mediaManager.currentState)

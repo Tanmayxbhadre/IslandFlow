@@ -9,12 +9,17 @@ public struct NotchCoverShape: Shape {
         self.cornerRadius = cornerRadius
     }
     
+    public var animatableData: CGFloat {
+        get { cornerRadius }
+        set { cornerRadius = newValue }
+    }
+    
     public func path(in rect: CGRect) -> Path {
         var path = Path()
-        let r = min(cornerRadius, min(rect.width/2, rect.height/2))
+        let r = min(cornerRadius, min(rect.width / 2.0, rect.height / 2.0))
         
         if isTopFlush {
-            // Flat top edge against screen bezel, rounded bottom corners
+            // Flat top edge against top screen bezel, smooth rounded bottom corners
             path.move(to: CGPoint(x: rect.minX, y: rect.minY))
             path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
             path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - r))
@@ -35,7 +40,6 @@ public struct NotchCoverShape: Shape {
             )
             path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
         } else {
-            // Standard rounded rectangle for floating states
             path.addRoundedRect(in: rect, cornerSize: CGSize(width: r, height: r))
         }
         
