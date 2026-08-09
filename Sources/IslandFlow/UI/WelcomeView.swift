@@ -98,7 +98,7 @@ public struct WelcomeView: View {
 public final class WelcomeWindowController: NSObject, NSWindowDelegate {
     public static let shared = WelcomeWindowController()
 
-    private var window: NSWindow?
+    public private(set) var window: NSWindow?
 
     private override init() {
         super.init()
