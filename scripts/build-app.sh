@@ -41,4 +41,11 @@ cat << 'EOF' > "$CONTENTS_DIR/Info.plist"
 </plist>
 EOF
 
-echo "IslandFlow.app created successfully!"
+echo "Cleaning extended attributes and applying ad-hoc code signature..."
+xattr -cr "$APP_DIR"
+codesign --force --deep --sign - "$APP_DIR"
+
+echo "Verifying code signature..."
+codesign --verify --deep --strict --verbose=4 "$APP_DIR"
+
+echo "IslandFlow.app created and signed successfully!"

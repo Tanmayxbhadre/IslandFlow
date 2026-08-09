@@ -28,43 +28,52 @@ echo "ISLANDFLOW ARCHIVE CREATION: $DMG_FILENAME"
 echo "============================================================"
 
 # Ensure release app exists
-if [ ! -d "$APP_SOURCE" ]; then
-    echo "--> $APP_SOURCE not found. Building release app first..."
-    "$SCRIPT_DIR/build-release.sh"
+if [ ! -d "$APP_SOURCE" ] && [ ! -d "$PROJECT_DIR/$APP_NAME" ]; then
+    echo "--> Building release app..."
+    "$SCRIPT_DIR/build-app.sh"
+fi
+
+if [ -d "$PROJECT_DIR/$APP_NAME" ]; then
+    APP_SOURCE="$PROJECT_DIR/$APP_NAME"
 fi
 
 # Clean DMG staging & previous archives
 rm -rf "$DMG_STAGING_DIR" "$RELEASES_DIR/$DMG_FILENAME" "$RELEASES_DIR/$ZIP_FILENAME" "${DMG_OUT_BASE}.dmg"
-mkdir -p "$DMG_STAGING_DIR"
+mkdir -p "$DMG_STAGING_DIR" "$RELEASES_DIR"
 
-# Copy App and create Applications symlink
+# Copy App and create Applications symlink inside staging folder
 echo "--> Staging archive contents..."
 cp -R "$APP_SOURCE" "$DMG_STAGING_DIR/"
 ln -s /Applications "$DMG_STAGING_DIR/Applications"
 
-# 1. Create distribution ZIP archive using ditto
+# 1. Ensure app is ad-hoc signed and verified before packaging
+echo "--> Cleaning extended attributes & applying ad-hoc code signature..."
+xattr -cr "$DMG_STAGING_DIR/$APP_NAME"
+codesign --force --deep --sign - "$DMG_STAGING_DIR/$APP_NAME"
+codesign --verify --deep --strict --verbose=4 "$DMG_STAGING_DIR/$APP_NAME"
+
+# 2. Create distribution ZIP archive using ditto
 echo "--> Creating compressed release ZIP archive..."
 ditto -c -k --sequesterRsrc "$APP_SOURCE" "$RELEASES_DIR/$ZIP_FILENAME"
 
-# 2. Attempt DMG creation using hdiutil (with graceful fallback if disk device access restricted)
+# 3. Create compressed DMG archive using hybrid + convert pipeline
 echo "--> Creating compressed DMG archive..."
-if hdiutil create -volname "IslandFlow" -srcfolder "$DMG_STAGING_DIR" -ov -format UDZO "$DMG_OUT_BASE" 2>/dev/null; then
-    FINAL_DMG="$RELEASES_DIR/$DMG_FILENAME"
-    if [ -n "$SIGNING_IDENTITY" ]; then
-        echo "--> Code signing DMG archive..."
-        codesign --force --sign "$SIGNING_IDENTITY" "$FINAL_DMG" 2>/dev/null || true
-    fi
-    echo "--> Generating SHA-256 checksum for DMG..."
-    cd "$RELEASES_DIR"
-    shasum -a 256 "$DMG_FILENAME" > "${DMG_FILENAME}.sha256"
-    cd "$PROJECT_DIR"
-else
-    echo "[NOTICE] DMG kernel device creation restricted by environment — ZIP release created as primary package."
-fi
+TEMP_HYBRID="$BUILD_ROOT/temp_hybrid.dmg"
+rm -f "$TEMP_HYBRID" "$TEMP_HYBRID.iso" "$RELEASES_DIR/$DMG_FILENAME"
 
-# Generate SHA-256 for ZIP
-echo "--> Generating SHA-256 checksum for ZIP package..."
+hdiutil makehybrid -hfs -iso -joliet -o "$TEMP_HYBRID" "$DMG_STAGING_DIR"
+hdiutil convert "$TEMP_HYBRID.iso" -format UDZO -o "$RELEASES_DIR/$DMG_FILENAME"
+rm -f "$TEMP_HYBRID.iso"
+
+# Copy to website downloads directory
+WEBSITE_DOWNLOADS="$PROJECT_DIR/website/downloads"
+mkdir -p "$WEBSITE_DOWNLOADS"
+cp "$RELEASES_DIR/$DMG_FILENAME" "$WEBSITE_DOWNLOADS/$DMG_FILENAME"
+
+# Calculate SHA-256 checksums
+echo "--> Generating SHA-256 checksums..."
 cd "$RELEASES_DIR"
+shasum -a 256 "$DMG_FILENAME" > "${DMG_FILENAME}.sha256"
 shasum -a 256 "$ZIP_FILENAME" > "${ZIP_FILENAME}.sha256"
 cd "$PROJECT_DIR"
 
@@ -72,9 +81,7 @@ rm -rf "$DMG_STAGING_DIR"
 
 echo "============================================================"
 echo "Release Package Created Successfully:"
-echo "ZIP Path:     $RELEASES_DIR/$ZIP_FILENAME"
-echo "ZIP SHA-256:  $(cat "$RELEASES_DIR/${ZIP_FILENAME}.sha256")"
-if [ -f "$RELEASES_DIR/$DMG_FILENAME" ]; then
-    echo "DMG Path:     $RELEASES_DIR/$DMG_FILENAME"
-fi
+echo "DMG Path:     $RELEASES_DIR/$DMG_FILENAME"
+echo "Website Path: $WEBSITE_DOWNLOADS/$DMG_FILENAME"
+echo "DMG SHA-256:  $(cat "$RELEASES_DIR/${DMG_FILENAME}.sha256")"
 echo "============================================================"
