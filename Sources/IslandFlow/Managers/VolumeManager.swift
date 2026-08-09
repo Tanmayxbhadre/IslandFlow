@@ -114,8 +114,12 @@ public final class VolumeManager: ObservableObject {
 
     public func setVolumeLevel(_ level: Int) {
         let target = min(max(level, 0), 100)
+        // AppleScript sets the real system volume asynchronously.
+        // The CoreAudio property listener (AudioObjectAddPropertyListenerBlock) will
+        // fire when the volume change takes effect — that's the authoritative update path.
+        // Do NOT call fetchVolumeState() here; it reads the old value before the
+        // AppleScript command has executed.
         executeAppleScript("set volume output volume \(target)")
-        fetchVolumeState()
     }
 
     public func adjustVolume(by delta: Int) {
@@ -125,8 +129,8 @@ public final class VolumeManager: ObservableObject {
 
     public func toggleMute() {
         let newMuted = !currentState.isMuted
+        // AppleScript sets mute state asynchronously. The CoreAudio listener handles the update.
         executeAppleScript("set volume output muted \(newMuted ? "true" : "false")")
-        fetchVolumeState()
     }
 
     private func executeAppleScript(_ script: String) {

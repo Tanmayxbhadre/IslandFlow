@@ -679,12 +679,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     @objc private func increaseBrightnessAction() {
-        let current = SystemStateController.shared.effectiveBrightness.level
-        SimulationController.shared.setSimulatedBrightness(level: current + 10)
+        if SimulationController.shared.simulatedBrightness != nil {
+            let current = SystemStateController.shared.effectiveBrightness.level
+            SimulationController.shared.setSimulatedBrightness(level: current + 10)
+        } else {
+            BrightnessManager.shared.increase(by: 10)
+        }
     }
     @objc private func decreaseBrightnessAction() {
-        let current = SystemStateController.shared.effectiveBrightness.level
-        SimulationController.shared.setSimulatedBrightness(level: current - 10)
+        if SimulationController.shared.simulatedBrightness != nil {
+            let current = SystemStateController.shared.effectiveBrightness.level
+            SimulationController.shared.setSimulatedBrightness(level: current - 10)
+        } else {
+            BrightnessManager.shared.decrease(by: 10)
+        }
     }
     @objc private func resetBrightnessSimulationAction() {
         SimulationController.shared.resetBrightnessSimulation()

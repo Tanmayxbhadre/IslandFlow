@@ -219,23 +219,15 @@ public final class MediaManager: ObservableObject {
     }
     
     public func togglePlayPause() {
-        let script = currentState.sourceName == "Spotify" ? "tell application \"Spotify\" to playpause" : "tell application \"Music\" to playpause"
-        executeAppleScript(script)
-        
-        let newIsPlaying = !currentState.isPlaying
-        let newPlaybackState: MediaPlaybackState = newIsPlaying ? .playing : .paused
-        let updated = MediaState(
-            title: currentState.title,
-            artist: currentState.artist,
-            album: currentState.album,
-            isPlaying: newIsPlaying,
-            currentTime: currentState.currentTime,
-            duration: currentState.duration,
-            artwork: currentState.artwork,
-            sourceName: currentState.sourceName,
-            playbackState: newPlaybackState
-        )
-        updateState(updated)
+        // Send the real playpause command. Do NOT optimistically flip isPlaying here.
+        // The distributed notification (com.spotify.client.PlaybackStateChanged or
+        // com.apple.Music.playerInfo) will fire after the system processes the command
+        // and that notification is the authoritative source of truth for state.
+        if currentState.sourceName == "Spotify" {
+            executeAppleScript("tell application \"Spotify\" to playpause")
+        } else {
+            executeAppleScript("tell application \"Music\" to playpause")
+        }
     }
     
     public func nextTrack() {
@@ -258,13 +250,100 @@ public final class MediaManager: ObservableObject {
     }
     
     private func checkActiveMediaSources() {
+        // Poll current track state from running media apps at launch.
+        // Each poll runs on a detached Task to avoid blocking the main actor,
+        // then delivers parsed results back via MainActor.
         let musicRunning = !NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.Music").isEmpty
         let spotifyRunning = !NSRunningApplication.runningApplications(withBundleIdentifier: "com.spotify.client").isEmpty
-        
-        if musicRunning {
-            executeAppleScript("tell application \"Music\" to get {player state, name of current track, artist of current track, duration of current track, player position}")
-        } else if spotifyRunning {
-            executeAppleScript("tell application \"Spotify\" to get {player state, name of current track, artist of current track, duration of current track, player position}")
+
+        if spotifyRunning {
+            Task.detached {
+                let script = """
+                    tell application "Spotify"
+                        if player state is playing or player state is paused then
+                            set ps to player state as string
+                            set tn to name of current track
+                            set ta to artist of current track
+                            set tal to album of current track
+                            set td to (duration of current track) / 1000.0
+                            set tp to player position
+                            return ps & "|" & tn & "|" & ta & "|" & tal & "|" & td & "|" & tp
+                        end if
+                    end tell
+                    """
+                if let appleScript = NSAppleScript(source: script) {
+                    var error: NSDictionary?
+                    let result = appleScript.executeAndReturnError(&error)
+                    if let raw = result.stringValue, !raw.isEmpty {
+                        let parts = raw.components(separatedBy: "|")
+                        if parts.count >= 6 {
+                            let stateStr = parts[0].trimmingCharacters(in: .whitespaces)
+                            let title    = parts[1]
+                            let artist   = parts[2]
+                            let album    = parts[3]
+                            let duration = Double(parts[4]) ?? 0
+                            let position = Double(parts[5]) ?? 0
+                            let playing  = stateStr.lowercased() == "playing"
+                            let ps: MediaPlaybackState = playing ? .playing : .paused
+                            let state = MediaState(
+                                title: title,
+                                artist: artist,
+                                album: album,
+                                isPlaying: playing,
+                                currentTime: position,
+                                duration: duration,
+                                sourceName: "Spotify",
+                                playbackState: ps
+                            )
+                            await MainActor.run { self.updateState(state) }
+                        }
+                    }
+                }
+            }
+        } else if musicRunning {
+            Task.detached {
+                let script = """
+                    tell application "Music"
+                        if player state is playing or player state is paused then
+                            set ps to player state as string
+                            set tn to name of current track
+                            set ta to artist of current track
+                            set tal to album of current track
+                            set td to duration of current track
+                            set tp to player position
+                            return ps & "|" & tn & "|" & ta & "|" & tal & "|" & td & "|" & tp
+                        end if
+                    end tell
+                    """
+                if let appleScript = NSAppleScript(source: script) {
+                    var error: NSDictionary?
+                    let result = appleScript.executeAndReturnError(&error)
+                    if let raw = result.stringValue, !raw.isEmpty {
+                        let parts = raw.components(separatedBy: "|")
+                        if parts.count >= 6 {
+                            let stateStr = parts[0].trimmingCharacters(in: .whitespaces)
+                            let title    = parts[1]
+                            let artist   = parts[2]
+                            let album    = parts[3]
+                            let duration = Double(parts[4]) ?? 0
+                            let position = Double(parts[5]) ?? 0
+                            let playing  = stateStr.lowercased() == "playing"
+                            let ps: MediaPlaybackState = playing ? .playing : .paused
+                            let state = MediaState(
+                                title: title,
+                                artist: artist,
+                                album: album,
+                                isPlaying: playing,
+                                currentTime: position,
+                                duration: duration,
+                                sourceName: "Music",
+                                playbackState: ps
+                            )
+                            await MainActor.run { self.updateState(state) }
+                        }
+                    }
+                }
+            }
         }
     }
     

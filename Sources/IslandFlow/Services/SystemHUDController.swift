@@ -24,43 +24,16 @@ public final class SystemHUDController: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     private init() {
-        observeHardwareManagers()
+        // SystemHUDController no longer directly subscribes to hardware managers.
+        // SystemStateController is the single forwarding authority:
+        //   Hardware Manager → SystemStateController → SystemHUDController.handleSystemEvent()
+        // This prevents double-firing of HUD events on every hardware change.
+        observeMediaManager()
     }
 
-    private func observeHardwareManagers() {
-        BatteryManager.shared.$currentState
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] batteryState in
-                if AppSettings.shared.showBatteryHUD {
-                    self?.handleSystemEvent(.battery(batteryState))
-                }
-            }
-            .store(in: &cancellables)
-
-        VolumeManager.shared.$currentState
-            .receive(on: RunLoop.main)
-            .dropFirst()
-            .sink { [weak self] volumeState in
-                let settings = AppSettings.shared
-                if volumeState.isMuted && settings.showMuteHUD {
-                    self?.handleSystemEvent(.volume(volumeState))
-                } else if !volumeState.isMuted && settings.showVolumeHUD {
-                    self?.handleSystemEvent(.volume(volumeState))
-                }
-            }
-            .store(in: &cancellables)
-
-        BrightnessManager.shared.$currentState
-            .receive(on: RunLoop.main)
-            .dropFirst()
-            .sink { [weak self] brightnessState in
-                if AppSettings.shared.showBrightnessHUD {
-                    self?.handleSystemEvent(.brightness(brightnessState))
-                }
-            }
-            .store(in: &cancellables)
-
+    /// Subscribe only to MediaManager — media state changes are handled here
+    /// because they affect island content (not just HUD display duration).
+    private func observeMediaManager() {
         MediaManager.shared.$currentState
             .receive(on: RunLoop.main)
             .sink { [weak self] mediaState in

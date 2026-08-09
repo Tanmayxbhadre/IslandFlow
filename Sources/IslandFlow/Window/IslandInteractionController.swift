@@ -348,10 +348,14 @@ public final class IslandInteractionController: ObservableObject {
     }
 
     private func cancelClose(reason: String) {
+        // Cancel the task FIRST, then reset flags. This prevents a race where
+        // isPendingClose becomes false before the task is actually cancelled,
+        // allowing scheduleClose() to be re-entered and creating double-close sequences.
+        let wasActive = isPendingClose || state == .closing
         closeTask?.cancel()
         closeTask = nil
-        if isPendingClose || state == .closing {
-            isPendingClose = false
+        isPendingClose = false
+        if wasActive {
             state = .opening
             Logger.window.debug("[Hover] CLOSE_CANCELLED -> OPENING reason=\(reason)")
         }
