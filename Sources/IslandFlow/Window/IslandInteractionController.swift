@@ -61,6 +61,9 @@ public final class IslandInteractionController: ObservableObject {
     private var globalMonitor: Any?
     private var localMonitor: Any?
 
+    /// True when global mouse monitoring is active (Input Monitoring permission granted).
+    @Published public private(set) var monitoringActive: Bool = false
+
     // MARK: — Timers / Tasks
 
     private var openTask: Task<Void, Never>?
@@ -166,7 +169,30 @@ public final class IslandInteractionController: ObservableObject {
             return event
         }
 
-        Logger.window.info("[Hover] Mouse monitoring started")
+        if globalMonitor != nil {
+            monitoringActive = true
+            Logger.window.info("[Hover] Mouse monitoring started — global monitor active")
+        } else {
+            monitoringActive = false
+            Logger.window.warning("[Hover] Global monitor FAILED — Input Monitoring permission likely denied. Hover will not function until permission is granted.")
+            // Show user-facing alert on main thread
+            DispatchQueue.main.async {
+                PermissionAlert.showInputMonitoringAlert()
+            }
+        }
+    }
+
+    /// Call this after the user grants Input Monitoring permission to re-attempt monitoring.
+    public func retryMonitoring() {
+        if globalMonitor != nil {
+            return // Already active
+        }
+        // Remove any stale local monitor
+        if let lm = localMonitor {
+            NSEvent.removeMonitor(lm)
+            localMonitor = nil
+        }
+        startMonitoring()
     }
 
     // MARK: — Position Verification

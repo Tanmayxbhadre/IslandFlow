@@ -18,6 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem?
     private var mainContainerMenu: NSMenu?
     private var cancellables = Set<AnyCancellable>()
+    private var monitoringRetryTask: Task<Void, Never>?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -32,6 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         _ = AppSettings.shared
         
         observeStateChanges()
+        observeMonitoringState()
         
         // Show Welcome Onboarding window on first launch
         WelcomeWindowController.shared.showIfFirstLaunch()
@@ -83,6 +85,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             .store(in: &cancellables)
     }
 
+    /// Observes the monitoring permission state and triggers periodic retries + menu refresh.
+    private func observeMonitoringState() {
+        IslandInteractionController.shared.$monitoringActive
+            .receive(on: RunLoop.main)
+            .sink { [weak self] active in
+                self?.refreshMenuIfOpen()
+                if active {
+                    self?.monitoringRetryTask?.cancel()
+                    self?.monitoringRetryTask = nil
+                } else {
+                    self?.startMonitoringRetryLoop()
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Periodically retries Input Monitoring registration until it succeeds.
+    private func startMonitoringRetryLoop() {
+        guard monitoringRetryTask == nil else { return }
+        monitoringRetryTask = Task { @MainActor in
+            var attempt = 0
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 10_000_000_000) // 10 seconds
+                guard !Task.isCancelled else { break }
+                attempt += 1
+                Logger.app.info("[Permission] Retry attempt \(attempt) for Input Monitoring")
+                IslandInteractionController.shared.retryMonitoring()
+                if IslandInteractionController.shared.monitoringActive { break }
+            }
+        }
+    }
+
     private func refreshMenuIfOpen() {
         if let menu = mainContainerMenu {
             rebuildMenu(menu)
@@ -99,6 +133,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     private func rebuildMenu(_ menu: NSMenu) {
         menu.removeAllItems()
+        
+        // 0. Permission Warning (shown when Input Monitoring permission is missing)
+        if !IslandInteractionController.shared.monitoringActive {
+            let warnItem = NSMenuItem(title: "⚠️ Grant Input Monitoring to enable hover", action: #selector(openInputMonitoringSettings), keyEquivalent: "")
+            warnItem.target = self
+            menu.addItem(warnItem)
+            
+            let retryItem = NSMenuItem(title: "  Retry Permission Now", action: #selector(retryInputMonitoring), keyEquivalent: "")
+            retryItem.target = self
+            menu.addItem(retryItem)
+            menu.addItem(NSMenuItem.separator())
+        }
         
         // 1. Header Title
         let titleItem = NSMenuItem(title: "IslandFlow", action: nil, keyEquivalent: "")
@@ -581,6 +627,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func resetHoverSettings() { HoverSettings.shared.resetToDefaults() }
 
     @objc private func toggleIslandState() { AppState.shared.toggleState() }
+
+    @objc private func openInputMonitoringSettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    @objc private func retryInputMonitoring() {
+        IslandInteractionController.shared.retryMonitoring()
+    }
 
     // MARK: — Submenu Actions (Volume / Brightness / Battery / Media / Reset)
 
