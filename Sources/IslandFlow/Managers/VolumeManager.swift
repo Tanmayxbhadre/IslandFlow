@@ -109,6 +109,34 @@ public final class VolumeManager: ObservableObject {
             }
         }
     }
+
+    // MARK: — Audio Control Actions
+
+    public func setVolumeLevel(_ level: Int) {
+        let target = min(max(level, 0), 100)
+        executeAppleScript("set volume output volume \(target)")
+        fetchVolumeState()
+    }
+
+    public func adjustVolume(by delta: Int) {
+        let newLevel = min(max(currentState.level + delta, 0), 100)
+        setVolumeLevel(newLevel)
+    }
+
+    public func toggleMute() {
+        let newMuted = !currentState.isMuted
+        executeAppleScript("set volume output muted \(newMuted ? "true" : "false")")
+        fetchVolumeState()
+    }
+
+    private func executeAppleScript(_ script: String) {
+        Task.detached {
+            if let appleScript = NSAppleScript(source: script) {
+                var error: NSDictionary?
+                appleScript.executeAndReturnError(&error)
+            }
+        }
+    }
     
     #if DEBUG
     public func simulateState(_ state: VolumeState) {

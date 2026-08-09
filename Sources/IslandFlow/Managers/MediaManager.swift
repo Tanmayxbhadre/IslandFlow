@@ -268,6 +268,10 @@ public final class MediaManager: ObservableObject {
         }
     }
     
+    public func updateStateFromEffective(_ state: MediaState) {
+        updateState(state)
+    }
+
     #if DEBUG
     public func simulateMediaState(_ state: MediaState) {
         updateState(state)
