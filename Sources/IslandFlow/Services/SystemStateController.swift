@@ -52,9 +52,6 @@ public final class SystemStateController: ObservableObject {
             .sink { [weak self] state in
                 guard let self = self else { return }
                 self.actualMedia = state
-                if SimulationController.shared.simulatedMedia == nil {
-                    MediaManager.shared.updateStateFromEffective(state)
-                }
             }
             .store(in: &cancellables)
 
