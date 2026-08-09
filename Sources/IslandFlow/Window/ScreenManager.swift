@@ -42,13 +42,15 @@ public final class ScreenManager {
         }
         
         let hasNotch = safeAreaTop > 0
-        var computedNotchWidth: CGFloat = (safeAreaTop > 36.0) ? 200.0 : 173.0
+        var computedNotchWidth: CGFloat = (safeAreaTop > 36.0) ? 180.0 : 160.0
         
         if #available(macOS 12.0, *) {
             if let topLeft = screen.auxiliaryTopLeftArea, let topRight = screen.auxiliaryTopRightArea {
                 let centerGap = screen.frame.width - (topLeft.width + topRight.width)
                 if centerGap > 0 {
-                    computedNotchWidth = centerGap
+                    // centerGap includes left and right menu item safety paddings (~9pt per side).
+                    // The physical plastic notch cutout width is centerGap - 18.0.
+                    computedNotchWidth = max(centerGap - 18.0, 160.0)
                 }
             }
         }

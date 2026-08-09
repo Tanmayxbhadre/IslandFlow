@@ -21,7 +21,7 @@ public enum IslandState: Equatable {
     public var size: CGSize {
         let metrics = ScreenManager.shared.activeScreenMetrics()
         switch self {
-        case .notchCover:
+        case .notchCover, .mediaCompact:
             let w = metrics.hasNotch ? metrics.notchWidth : 140.0
             let h = metrics.hasNotch ? metrics.safeAreaTopInset : 32.0
             return CGSize(width: w, height: h)
@@ -33,10 +33,6 @@ public enum IslandState: Equatable {
             return CGSize(width: 140.0, height: 32.0)
         case .expanded:
             return CGSize(width: 320.0, height: 125.0)
-        case .mediaCompact:
-            let w = metrics.hasNotch ? max(metrics.notchWidth + 24.0, 195.0) : 180.0
-            let h = metrics.hasNotch ? metrics.safeAreaTopInset : 34.0
-            return CGSize(width: w, height: h)
         case .mediaExpanded:
             return CGSize(width: 350.0, height: 145.0)
         case .battery:
@@ -49,23 +45,18 @@ public enum IslandState: Equatable {
     }
 
     // MARK: — Corner Radius
-    //
-    // These values form a smooth progression from the physical notch shape to
-    // the full rounded island. SwiftUI's animatableData on FluidIslandShape
-    // interpolates the radius continuously between states, so every intermediate
-    // frame produces a different curve — no sudden corner appearance.
 
     public var cornerRadius: CGFloat {
         switch self {
-        case .notchCover:   return 10.0   // matches physical notch bottom curve
+        case .notchCover,
+             .mediaCompact: return 10.0   // matches physical notch bottom curve
         case .hover:        return 16.0
         case .compact:      return 16.0
-        case .mediaCompact: return 18.0
         case .battery,
              .volume,
              .brightness:   return 20.0
         case .expanded,
-             .mediaExpanded: return 24.0
+             .mediaExpanded: return 22.0
         }
     }
 

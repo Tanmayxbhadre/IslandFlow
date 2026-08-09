@@ -31,17 +31,10 @@ public struct IslandContainerView: View {
     private var targetSize: CGSize { appState.islandState.size }
     private var targetCornerRadius: CGFloat { appState.islandState.cornerRadius }
 
-    // Content is visible only once the island is large enough to show it.
-    // We measure "large enough" by checking if the state is bigger than notchCover.
+    // Content is visible only when the island is expanded or hovered.
+    // When collapsed at rest (progress = 0), content fades out so the island is pure black notch.
     private var contentOpacity: Double {
-        switch appState.islandState {
-        case .notchCover:
-            return 0.0
-        case .hover:
-            return 1.0
-        default:
-            return 1.0
-        }
+        return isHoveredOrExpanded ? 1.0 : 0.0
     }
 
     // Spring animation used for all geometry + content transitions.
