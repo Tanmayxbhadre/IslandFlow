@@ -1,0 +1,21 @@
+{
+  "name": "islandflow",
+  "version": "1.0.0",
+  "description": "**IslandFlow** is a native macOS menu-bar utility that brings a physically coherent, Dynamic Island-style experience to Apple Silicon and Intel MacBooks featuring the camera notch.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tanmayxbhadre/IslandFlow.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Tanmayxbhadre/IslandFlow/issues"
+  },
+  "homepage": "https://github.com/Tanmayxbhadre/IslandFlow#readme"
+}
