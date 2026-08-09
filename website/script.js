@@ -1,9 +1,22 @@
 /**
  * IslandFlow — Production Product Website Script
- * Interactive Product Demo, Audio Waveform, Split Comparison Slider, and FAQ.
+ * Live Audio Synthesizer, Interactive Product Demo, Draggable Sliders, Split Comparison & FAQ.
  */
 
 const DOWNLOAD_URL = "downloads/IslandFlow-1.0.0.dmg";
+
+// Web Audio Synth Engine for Live Demo Playback
+let audioCtx = null;
+let masterGain = null;
+let isAudioPlaying = false;
+let currentTrackIndex = 0;
+let noteInterval = null;
+
+const DEMO_TRACKS = [
+  { title: "Midnight City", artist: "M83 — Hurry Up, We're Dreaming", duration: 244, notes: [261.63, 329.63, 392.00, 523.25] },
+  { title: "Somewhere Only We Know", artist: "Gustixa — Chill Beats", duration: 183, notes: [293.66, 369.99, 440.00, 587.33] },
+  { title: "Starboy", artist: "The Weeknd — Starboy", duration: 230, notes: [329.63, 392.00, 493.88, 659.25] }
+];
 
 document.addEventListener('DOMContentLoaded', () => {
   initDownloadButtons();
@@ -14,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initFAQAccordion();
   initMobileMenu();
   initScrollStory();
+  initQuietSection();
 });
 
 /* -----------------------------------------------------------------------------
@@ -77,11 +91,12 @@ function initInteractiveDemo() {
   if (!island) return;
 
   let currentMode = 'media';
+  let hoverTimer = null;
 
   function switchMode(newMode) {
     currentMode = newMode;
     
-    // Update active button
+    // Update active button state
     modeBtns.forEach(btn => {
       btn.classList.toggle('active', btn.dataset.mode === newMode);
     });
@@ -93,34 +108,32 @@ function initInteractiveDemo() {
       }
     });
 
-    // Expand island when mode changes
     expandIsland();
   }
 
   function expandIsland() {
+    clearTimeout(hoverTimer);
     island.classList.remove('collapsed');
     island.classList.add('expanded');
   }
 
   function collapseIsland() {
-    island.classList.remove('expanded');
-    island.classList.add('collapsed');
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(() => {
+      if (!island.matches(':hover') && !notchTrigger?.matches(':hover')) {
+        island.classList.remove('expanded');
+        island.classList.add('collapsed');
+      }
+    }, 1200);
   }
 
-  // Hover triggers over notch and island
   if (notchTrigger) {
     notchTrigger.addEventListener('mouseenter', expandIsland);
+    notchTrigger.addEventListener('mouseleave', collapseIsland);
   }
 
   island.addEventListener('mouseenter', expandIsland);
-  island.addEventListener('mouseleave', () => {
-    // Grace period collapse
-    setTimeout(() => {
-      if (!island.matches(':hover') && !notchTrigger?.matches(':hover')) {
-        collapseIsland();
-      }
-    }, 1200);
-  });
+  island.addEventListener('mouseleave', collapseIsland);
 
   modeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -131,21 +144,92 @@ function initInteractiveDemo() {
   // Default active view
   switchMode('media');
 
-  // Media Player Scrubber Simulation
-  initMediaScrubber();
+  // Media, Volume, Brightness Controls
+  initMediaControls();
+  initVolumeSlider();
+  initBrightnessSlider();
 }
 
-function initMediaScrubber() {
+/* -----------------------------------------------------------------------------
+ * Web Audio Synthesizer (Plays Real Song Audio in Demo)
+ * ----------------------------------------------------------------------------- */
+function initWebAudio() {
+  if (audioCtx) return;
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+  audioCtx = new AudioCtx();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.25; // Default demo volume 25%
+  masterGain.connect(audioCtx.destination);
+}
+
+function playDemoSong() {
+  initWebAudio();
+  if (!audioCtx) return;
+
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+
+  isAudioPlaying = true;
+  clearInterval(noteInterval);
+
+  const track = DEMO_TRACKS[currentTrackIndex];
+  let noteIdx = 0;
+
+  // Synthesize smooth synth melody loop
+  noteInterval = setInterval(() => {
+    if (!isAudioPlaying || !audioCtx) return;
+    try {
+      const osc = audioCtx.createOscillator();
+      const noteGain = audioCtx.createGain();
+
+      const freq = track.notes[noteIdx % track.notes.length];
+      noteIdx++;
+
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      const now = audioCtx.currentTime;
+      noteGain.gain.setValueAtTime(0.001, now);
+      noteGain.gain.linearRampToValueAtTime(0.12, now + 0.1);
+      noteGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+      osc.connect(noteGain);
+      noteGain.connect(masterGain);
+
+      osc.start(now);
+      osc.stop(now + 0.65);
+    } catch (e) {
+      console.log("[Audio Synth]", e);
+    }
+  }, 400);
+}
+
+function pauseDemoSong() {
+  isAudioPlaying = false;
+  clearInterval(noteInterval);
+  if (audioCtx && audioCtx.state === 'running') {
+    audioCtx.suspend();
+  }
+}
+
+/* -----------------------------------------------------------------------------
+ * Media Player Scrubber & Track Switcher
+ * ----------------------------------------------------------------------------- */
+function initMediaControls() {
   const btnPlayPause = document.getElementById('btn-playpause');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
   const playIcon = document.getElementById('playpause-icon');
   const progressFill = document.getElementById('progress-fill');
   const progressTrack = document.getElementById('progress-track');
   const timeCur = document.getElementById('demo-time-cur');
   const timeRem = document.getElementById('demo-time-rem');
+  const songTitle = document.querySelector('.song-title');
+  const artistName = document.querySelector('.artist-name');
 
-  let isPlaying = true;
   let currentSec = 102; // 1:42
-  const totalSec = 224; // 3:44
 
   function formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
@@ -153,28 +237,61 @@ function initMediaScrubber() {
     return `${mins}:${String(secs).padStart(2, '0')}`;
   }
 
-  function updateScrubber() {
-    if (!isPlaying) return;
-    currentSec = (currentSec + 1) % totalSec;
-    const pct = (currentSec / totalSec) * 100;
-    if (progressFill) progressFill.style.width = `${pct}%`;
-    if (timeCur) timeCur.textContent = formatTime(currentSec);
-    if (timeRem) timeRem.textContent = `-${formatTime(totalSec - currentSec)}`;
+  function updateTrackUI() {
+    const track = DEMO_TRACKS[currentTrackIndex];
+    if (songTitle) songTitle.textContent = track.title;
+    if (artistName) artistName.textContent = track.artist;
+    currentSec = 0;
+    updateProgressUI();
   }
 
-  const timer = setInterval(updateScrubber, 1000);
+  function updateProgressUI() {
+    const track = DEMO_TRACKS[currentTrackIndex];
+    const pct = (currentSec / track.duration) * 100;
+    if (progressFill) progressFill.style.width = `${pct}%`;
+    if (timeCur) timeCur.textContent = formatTime(currentSec);
+    if (timeRem) timeRem.textContent = `-${formatTime(track.duration - currentSec)}`;
+  }
+
+  setInterval(() => {
+    if (!isAudioPlaying) return;
+    const track = DEMO_TRACKS[currentTrackIndex];
+    currentSec = (currentSec + 1) % track.duration;
+    updateProgressUI();
+  }, 1000);
 
   if (btnPlayPause) {
     btnPlayPause.addEventListener('click', (e) => {
       e.stopPropagation();
-      isPlaying = !isPlaying;
-      if (playIcon) {
-        if (isPlaying) {
-          playIcon.innerHTML = `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>`;
-        } else {
+      if (isAudioPlaying) {
+        pauseDemoSong();
+        if (playIcon) {
           playIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"></polygon>`;
         }
+      } else {
+        playDemoSong();
+        if (playIcon) {
+          playIcon.innerHTML = `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>`;
+        }
       }
+    });
+  }
+
+  if (btnNext) {
+    btnNext.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentTrackIndex = (currentTrackIndex + 1) % DEMO_TRACKS.length;
+      updateTrackUI();
+      if (isAudioPlaying) playDemoSong();
+    });
+  }
+
+  if (btnPrev) {
+    btnPrev.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentTrackIndex = (currentTrackIndex - 1 + DEMO_TRACKS.length) % DEMO_TRACKS.length;
+      updateTrackUI();
+      if (isAudioPlaying) playDemoSong();
     });
   }
 
@@ -184,8 +301,106 @@ function initMediaScrubber() {
       const rect = progressTrack.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const pct = Math.max(0, Math.min(1, clickX / rect.width));
-      currentSec = Math.floor(pct * totalSec);
-      updateScrubber();
+      const track = DEMO_TRACKS[currentTrackIndex];
+      currentSec = Math.floor(pct * track.duration);
+      updateProgressUI();
+    });
+  }
+}
+
+/* -----------------------------------------------------------------------------
+ * Draggable Volume Slider
+ * ----------------------------------------------------------------------------- */
+function initVolumeSlider() {
+  const volTrack = document.querySelector('.view-volume .hud-slider-track');
+  const volFill = document.getElementById('vol-fill');
+  const volVal = document.getElementById('vol-val');
+
+  if (!volTrack || !volFill || !volVal) return;
+
+  function setVolume(pct) {
+    pct = Math.max(0, Math.min(100, Math.round(pct)));
+    volFill.style.width = `${pct}%`;
+    volVal.textContent = `${pct}%`;
+    if (masterGain) {
+      masterGain.gain.value = (pct / 100) * 0.5;
+    }
+  }
+
+  let isDragging = false;
+
+  function handleVolMove(clientX) {
+    const rect = volTrack.getBoundingClientRect();
+    const pct = ((clientX - rect.left) / rect.width) * 100;
+    setVolume(pct);
+  }
+
+  volTrack.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    handleVolMove(e.clientX);
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (isDragging) handleVolMove(e.clientX);
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+}
+
+/* -----------------------------------------------------------------------------
+ * Draggable Brightness Slider
+ * ----------------------------------------------------------------------------- */
+function initBrightnessSlider() {
+  const brightTrack = document.querySelector('.view-brightness .hud-slider-track');
+  const brightFill = document.getElementById('bright-fill');
+  const brightVal = document.getElementById('bright-val');
+  const simDesktop = document.querySelector('.sim-desktop-bg');
+
+  if (!brightTrack || !brightFill || !brightVal) return;
+
+  function setBrightness(pct) {
+    pct = Math.max(0, Math.min(100, Math.round(pct)));
+    brightFill.style.width = `${pct}%`;
+    brightVal.textContent = `${pct}%`;
+    if (simDesktop) {
+      const opacity = 0.3 + (pct / 100) * 0.7;
+      simDesktop.style.filter = `brightness(${opacity})`;
+    }
+  }
+
+  let isDragging = false;
+
+  function handleBrightMove(clientX) {
+    const rect = brightTrack.getBoundingClientRect();
+    const pct = ((clientX - rect.left) / rect.width) * 100;
+    setBrightness(pct);
+  }
+
+  brightTrack.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    handleBrightMove(e.clientX);
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (isDragging) handleBrightMove(e.clientX);
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+}
+
+/* -----------------------------------------------------------------------------
+ * Quiet Section Interaction
+ * ----------------------------------------------------------------------------- */
+function initQuietSection() {
+  const quietPill = document.getElementById('quiet-pill');
+  if (quietPill) {
+    quietPill.addEventListener('click', () => {
+      quietPill.style.transform = 'scale(1.3)';
+      setTimeout(() => { quietPill.style.transform = 'scale(1)'; }, 300);
     });
   }
 }
@@ -226,19 +441,12 @@ function initComparisonSlider() {
     isDragging = false;
   });
 
-  // Touch Support
-  handle.addEventListener('touchstart', (e) => {
-    isDragging = true;
-  });
-
+  handle.addEventListener('touchstart', () => { isDragging = true; });
   window.addEventListener('touchmove', (e) => {
     if (!isDragging || !e.touches[0]) return;
     updateSlider(e.touches[0].clientX);
   });
-
-  window.addEventListener('touchend', () => {
-    isDragging = false;
-  });
+  window.addEventListener('touchend', () => { isDragging = false; });
 }
 
 /* -----------------------------------------------------------------------------
@@ -266,10 +474,8 @@ function initFAQAccordion() {
       const item = btn.closest('.faq-item');
       const isOpen = item.classList.contains('open');
 
-      // Close all items
       document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
 
-      // Toggle clicked item
       if (!isOpen) {
         item.classList.add('open');
       }
