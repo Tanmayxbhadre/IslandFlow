@@ -64,7 +64,11 @@ public final class SystemHUDController: ObservableObject {
             if !Task.isCancelled && AppState.shared.islandState == newState {
                 withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
                     if MediaManager.shared.isMediaActive {
-                        AppState.shared.islandState = .mediaCompact(MediaManager.shared.currentState)
+                        if AppState.shared.isHovered {
+                            AppState.shared.islandState = .mediaExpanded(MediaManager.shared.currentState)
+                        } else {
+                            AppState.shared.islandState = .mediaCompact(MediaManager.shared.currentState)
+                        }
                     } else {
                         let metrics = ScreenManager.shared.activeScreenMetrics()
                         AppState.shared.islandState = metrics.hasNotch ? .notchCover : .compact

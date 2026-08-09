@@ -10,10 +10,16 @@ public final class MediaManager: ObservableObject {
     @Published public private(set) var isMediaActive: Bool = false
     
     private var progressTimer: Timer?
+    private var artworkCache: [String: NSImage] = [:]
     
     private init() {
         setupDistributedNotifications()
         checkActiveMediaSources()
+    }
+    
+    deinit {
+        DistributedNotificationCenter.default().removeObserver(self)
+        progressTimer?.invalidate()
     }
     
     private func setupDistributedNotifications() {
@@ -37,8 +43,9 @@ public final class MediaManager: ObservableObject {
     @objc private func handleAppleMusicNotification(_ notification: Notification) {
         guard let userInfo = notification.userInfo else { return }
         
-        let playerState = userInfo["Player State"] as? String ?? "Stopped"
-        let isPlaying = playerState == "Playing"
+        let playerStateStr = userInfo["Player State"] as? String ?? "Stopped"
+        let playbackState: MediaPlaybackState = playerStateStr == "Playing" ? .playing : (playerStateStr == "Paused" ? .paused : .stopped)
+        let isPlaying = playbackState == .playing
         let title = userInfo["Name"] as? String ?? "No Track"
         let artist = userInfo["Artist"] as? String ?? "Unknown Artist"
         let album = userInfo["Album"] as? String ?? ""
@@ -53,7 +60,8 @@ public final class MediaManager: ObservableObject {
             currentTime: position,
             duration: totalTime,
             artwork: nil,
-            sourceName: "Music"
+            sourceName: "Music",
+            playbackState: playbackState
         )
         
         updateState(newState)
@@ -62,8 +70,9 @@ public final class MediaManager: ObservableObject {
     @objc private func handleSpotifyNotification(_ notification: Notification) {
         guard let userInfo = notification.userInfo else { return }
         
-        let playerState = userInfo["Player State"] as? String ?? "Stopped"
-        let isPlaying = playerState == "Playing"
+        let playerStateStr = userInfo["Player State"] as? String ?? "Stopped"
+        let playbackState: MediaPlaybackState = playerStateStr == "Playing" ? .playing : (playerStateStr == "Paused" ? .paused : .stopped)
+        let isPlaying = playbackState == .playing
         let title = userInfo["Name"] as? String ?? "No Track"
         let artist = userInfo["Artist"] as? String ?? "Unknown Artist"
         let album = userInfo["Album"] as? String ?? ""
@@ -78,23 +87,108 @@ public final class MediaManager: ObservableObject {
             currentTime: position,
             duration: totalTime,
             artwork: nil,
-            sourceName: "Spotify"
+            sourceName: "Spotify",
+            playbackState: playbackState
         )
         
         updateState(newState)
     }
     
+    private func trackCacheKey(for state: MediaState) -> String {
+        return "\(state.sourceName):\(state.artist):\(state.album):\(state.title)"
+    }
+    
     private func updateState(_ newState: MediaState) {
-        self.currentState = newState
-        self.isMediaActive = newState.isPlaying || (newState.title != "No Track" && !newState.title.isEmpty)
+        let key = trackCacheKey(for: newState)
+        let existingArtwork = newState.artwork ?? artworkCache[key]
         
-        if newState.isPlaying {
+        let stateWithArtwork = MediaState(
+            title: newState.title,
+            artist: newState.artist,
+            album: newState.album,
+            isPlaying: newState.isPlaying,
+            currentTime: newState.currentTime,
+            duration: newState.duration,
+            artwork: existingArtwork,
+            sourceName: newState.sourceName,
+            playbackState: newState.playbackState
+        )
+        
+        self.currentState = stateWithArtwork
+        self.isMediaActive = (stateWithArtwork.playbackState == .playing || stateWithArtwork.playbackState == .paused) &&
+                             stateWithArtwork.title != "No Track" &&
+                             !stateWithArtwork.title.isEmpty
+        
+        if stateWithArtwork.isPlaying {
             startProgressTimer()
         } else {
             stopProgressTimer()
         }
         
-        Logger.app.info("Media updated: \(newState.title) by \(newState.artist), playing: \(newState.isPlaying)")
+        if existingArtwork == nil && isMediaActive {
+            fetchArtworkIfNeeded(for: stateWithArtwork)
+        }
+        
+        Logger.app.info("Media updated: \(stateWithArtwork.title) by \(stateWithArtwork.artist), state: \(stateWithArtwork.playbackState.rawValue)")
+    }
+    
+    private func updateArtwork(_ image: NSImage, for key: String) {
+        guard trackCacheKey(for: currentState) == key else { return }
+        let updated = MediaState(
+            title: currentState.title,
+            artist: currentState.artist,
+            album: currentState.album,
+            isPlaying: currentState.isPlaying,
+            currentTime: currentState.currentTime,
+            duration: currentState.duration,
+            artwork: image,
+            sourceName: currentState.sourceName,
+            playbackState: currentState.playbackState
+        )
+        self.currentState = updated
+    }
+    
+    private func fetchArtworkIfNeeded(for state: MediaState) {
+        let key = trackCacheKey(for: state)
+        if let cached = artworkCache[key] {
+            if currentState.artwork !== cached {
+                updateArtwork(cached, for: key)
+            }
+            return
+        }
+        
+        if state.sourceName == "Spotify" {
+            let script = "tell application \"Spotify\" to artwork url of current track"
+            Task.detached {
+                if let appleScript = NSAppleScript(source: script) {
+                    var error: NSDictionary?
+                    let descriptor = appleScript.executeAndReturnError(&error)
+                    if let urlString = descriptor.stringValue, let url = URL(string: urlString) {
+                        if let data = try? Data(contentsOf: url), let image = NSImage(data: data) {
+                            await MainActor.run {
+                                self.artworkCache[key] = image
+                                self.updateArtwork(image, for: key)
+                            }
+                        }
+                    }
+                }
+            }
+        } else if state.sourceName == "Music" {
+            let script = "tell application \"Music\" to raw data of artwork 1 of current track"
+            Task.detached {
+                if let appleScript = NSAppleScript(source: script) {
+                    var error: NSDictionary?
+                    let descriptor = appleScript.executeAndReturnError(&error)
+                    let data = descriptor.data
+                    if let image = NSImage(data: data) {
+                        await MainActor.run {
+                            self.artworkCache[key] = image
+                            self.updateArtwork(image, for: key)
+                        }
+                    }
+                }
+            }
+        }
     }
     
     private func startProgressTimer() {
@@ -111,7 +205,8 @@ public final class MediaManager: ObservableObject {
                     currentTime: newTime,
                     duration: self.currentState.duration,
                     artwork: self.currentState.artwork,
-                    sourceName: self.currentState.sourceName
+                    sourceName: self.currentState.sourceName,
+                    playbackState: self.currentState.playbackState
                 )
                 self.currentState = updated
             }
@@ -127,15 +222,18 @@ public final class MediaManager: ObservableObject {
         let script = currentState.sourceName == "Spotify" ? "tell application \"Spotify\" to playpause" : "tell application \"Music\" to playpause"
         executeAppleScript(script)
         
+        let newIsPlaying = !currentState.isPlaying
+        let newPlaybackState: MediaPlaybackState = newIsPlaying ? .playing : .paused
         let updated = MediaState(
             title: currentState.title,
             artist: currentState.artist,
             album: currentState.album,
-            isPlaying: !currentState.isPlaying,
+            isPlaying: newIsPlaying,
             currentTime: currentState.currentTime,
             duration: currentState.duration,
             artwork: currentState.artwork,
-            sourceName: currentState.sourceName
+            sourceName: currentState.sourceName,
+            playbackState: newPlaybackState
         )
         updateState(updated)
     }

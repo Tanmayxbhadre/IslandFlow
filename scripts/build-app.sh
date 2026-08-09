@@ -2,8 +2,8 @@
 set -e
 
 # Package script to build and produce IslandFlow.app
-echo "Building IslandFlow Release executable..."
-swift build -c release
+mkdir -p .build/module-cache .build/tmp .build/release
+TMPDIR=$(pwd)/.build/tmp DARWIN_USER_TEMP_DIR=$(pwd)/.build/tmp DARWIN_USER_CACHE_DIR=$(pwd)/.build/module-cache swiftc -O -module-cache-path .build/module-cache -Xcc -fmodules-cache-path=.build/module-cache -sdk $(xcrun --show-sdk-path) -parse-as-library $(find Sources/IslandFlow -name "*.swift") -o .build/release/IslandFlow
 
 BUILD_PATH=".build/release/IslandFlow"
 APP_DIR="IslandFlow.app"

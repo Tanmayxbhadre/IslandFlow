@@ -12,7 +12,7 @@ public struct MediaView: View {
     }
     
     public var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 12) {
             // Header: Artwork + Track Info
             HStack(spacing: 12) {
                 Group {
@@ -38,21 +38,24 @@ public struct MediaView: View {
                 }
                 .frame(width: 46, height: 46)
                 .cornerRadius(10)
-                .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                .shadow(color: .black.opacity(0.35), radius: 4, x: 0, y: 2)
+                .animation(.easeInOut(duration: 0.25), value: state.title)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(state.title)
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                         .lineLimit(1)
+                        .truncationMode(.tail)
                     
                     Text(state.artist)
                         .font(.system(size: 11, weight: .medium, design: .rounded))
                         .foregroundColor(.white.opacity(0.7))
                         .lineLimit(1)
+                        .truncationMode(.tail)
                 }
                 
-                Spacer()
+                Spacer(minLength: 4)
                 
                 Image(systemName: state.sourceName == "Spotify" ? "sparkles" : "music.quaver.line")
                     .font(.system(size: 14, weight: .bold))
@@ -88,27 +91,17 @@ public struct MediaView: View {
                     .frame(width: 38, alignment: .trailing)
             }
             
-            // Controls Bar
-            HStack {
-                Button(action: {}) {
-                    Image(systemName: "shuffle")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.white.opacity(0.5))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Shuffle")
-                
+            // Functional Playback Controls Bar
+            HStack(spacing: 24) {
                 Spacer()
                 
                 Button(action: { mediaManager.previousTrack() }) {
                     Image(systemName: "backward.fill")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.white.opacity(0.85))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Previous Track")
-                
-                Spacer()
                 
                 Button(action: { mediaManager.togglePlayPause() }) {
                     ZStack {
@@ -123,25 +116,15 @@ public struct MediaView: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(state.isPlaying ? "Pause" : "Play")
                 
-                Spacer()
-                
                 Button(action: { mediaManager.nextTrack() }) {
                     Image(systemName: "forward.fill")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.white.opacity(0.85))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Next Track")
                 
                 Spacer()
-                
-                Button(action: {}) {
-                    Image(systemName: "airplayaudio")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.white.opacity(0.5))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Audio Output")
             }
             .padding(.horizontal, 8)
         }
