@@ -83,7 +83,7 @@ public struct IslandContainerView: View {
         }
         .frame(width: expandedWidth, height: expandedHeight)
         .animation(islandAnimation, value: expansionProgress)
-        .onChange(of: expansionProgress) { _, newValue in
+        .onChange(of: expansionProgress) { newValue in
             appState.expansionProgress = newValue
             if newValue >= 0.999 {
                 interactionController.notifyExpandedComplete()
