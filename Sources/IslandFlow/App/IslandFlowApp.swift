@@ -21,13 +21,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var monitoringRetryTask: Task<Void, Never>?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        let startTime = CFAbsoluteTimeGetCurrent()
+        print("[IslandFlow] App launch (\(Date()))")
+        print("[IslandFlow] AppDelegate initialized")
+
         NSApp.setActivationPolicy(.accessory)
         setupStatusItem()
+        print("[IslandFlow] Menu bar initialized (+\(String(format: "%.2f", (CFAbsoluteTimeGetCurrent() - startTime) * 1000))ms)")
         
         WindowManager.shared.setupWindow()
-        _ = SystemHUDController.shared
+        print("[IslandFlow] Window initialized (+\(String(format: "%.2f", (CFAbsoluteTimeGetCurrent() - startTime) * 1000))ms)")
+
+        _ = IslandInteractionController.shared
+        print("[IslandFlow] Event monitors initialized (+\(String(format: "%.2f", (CFAbsoluteTimeGetCurrent() - startTime) * 1000))ms)")
+
         _ = MediaManager.shared
+        print("[IslandFlow] Media service initialized (+\(String(format: "%.2f", (CFAbsoluteTimeGetCurrent() - startTime) * 1000))ms)")
+
+        _ = VolumeManager.shared
+        print("[IslandFlow] Volume service initialized (+\(String(format: "%.2f", (CFAbsoluteTimeGetCurrent() - startTime) * 1000))ms)")
+
+        _ = BrightnessManager.shared
+        print("[IslandFlow] Brightness service initialized (+\(String(format: "%.2f", (CFAbsoluteTimeGetCurrent() - startTime) * 1000))ms)")
+
         _ = HoverSettings.shared
+        print("[IslandFlow] Hover engine initialized (+\(String(format: "%.2f", (CFAbsoluteTimeGetCurrent() - startTime) * 1000))ms)")
+
+        _ = SystemHUDController.shared
         _ = SystemStateController.shared
         _ = SimulationController.shared
         _ = AppSettings.shared
@@ -38,7 +58,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Show Welcome Onboarding window on first launch
         WelcomeWindowController.shared.showIfFirstLaunch()
         
-        Logger.app.info("IslandFlow Phase 14 launched successfully")
+        let totalElapsed = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
+        print("[IslandFlow] Ready (Total startup time: \(String(format: "%.2f", totalElapsed))ms)")
+        Logger.app.info("IslandFlow launched in \(totalElapsed)ms")
     }
     
     private func setupStatusItem() {
