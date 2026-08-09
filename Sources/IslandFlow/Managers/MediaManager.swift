@@ -239,6 +239,14 @@ public final class MediaManager: ObservableObject {
         let script = currentState.sourceName == "Spotify" ? "tell application \"Spotify\" to previous track" : "tell application \"Music\" to back track"
         executeAppleScript(script)
     }
+
+    public func seekTo(seconds: Double) {
+        let target = max(0, seconds)
+        let script = currentState.sourceName == "Spotify"
+            ? "tell application \"Spotify\" to set player position to \(target)"
+            : "tell application \"Music\" to set player position to \(target)"
+        executeAppleScript(script)
+    }
     
     private func executeAppleScript(_ script: String) {
         Task.detached {
