@@ -29,10 +29,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         _ = HoverSettings.shared
         _ = SystemStateController.shared
         _ = SimulationController.shared
+        _ = AppSettings.shared
         
         observeStateChanges()
         
-        Logger.app.info("IslandFlow Phase 11 launched successfully")
+        // Show Welcome Onboarding window on first launch
+        WelcomeWindowController.shared.showIfFirstLaunch()
+        
+        Logger.app.info("IslandFlow Phase 14 launched successfully")
     }
     
     private func setupStatusItem() {
@@ -50,7 +54,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func observeStateChanges() {
-        // Observe system & simulation updates to refresh menu dynamically
         SystemStateController.shared.objectWillChange
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
@@ -66,6 +69,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             .store(in: &cancellables)
 
         HoverSettings.shared.objectWillChange
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.refreshMenuIfOpen()
+            }
+            .store(in: &cancellables)
+
+        AppSettings.shared.objectWillChange
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 self?.refreshMenuIfOpen()
@@ -116,13 +126,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let simMenu = buildSimulationsSubmenu()
         simMenuItem.submenu = simMenu
         menu.addItem(simMenuItem)
-        
+
+        menu.addItem(NSMenuItem.separator())
+
+        // 5. Preferences… (Phase 14)
+        let prefItem = NSMenuItem(title: "Preferences…", action: #selector(openPreferencesAction), keyEquivalent: ",")
+        prefItem.target = self
+        menu.addItem(prefItem)
+
         menu.addItem(NSMenuItem.separator())
         
-        // 5. Quit
+        // 6. Quit
         let quitItem = NSMenuItem(title: "Quit IslandFlow", action: #selector(quitApp), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
+    }
+
+    @objc private func openPreferencesAction() {
+        PreferencesWindowController.shared.showWindow()
     }
     
     // MARK: — Hover Controls Submenu (Phase 10)
