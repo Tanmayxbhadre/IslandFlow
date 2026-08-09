@@ -1,16 +1,31 @@
 # IslandFlow v1.0.0 Release Notes
 
+**Release Type:** Private / Local Build  
 **Release Date:** August 9, 2026  
 **Target Platform:** macOS 13.0 (Ventura) or newer  
-**Supported Architectures:** Apple Silicon (arm64) & Intel (x86_64)
+**Supported Architecture:** Apple Silicon (arm64)
 
 ---
 
-## Highlights
+## Important Security Note for Local Release
 
-IslandFlow v1.0.0 is a native macOS Dynamic Island utility designed specifically for Apple Silicon and Intel MacBooks.
+> [!NOTE]  
+> This build is intended for local/private use on your Mac. It is code-signed using an ad-hoc local identity and is not Developer ID signed or notarized by Apple.
 
-### Key Capabilities
+### Launching on another Mac
+If copying the application bundle or DMG to another Mac, macOS Gatekeeper may display an unverified developer warning. To run the app:
+1. Open **Finder**, navigate to `/Applications/IslandFlow.app`.
+2. Right-click (or Control-click) `IslandFlow.app` and select **Open**.
+3. Click **Open** in the dialog prompt.
+
+Alternatively, remove the quarantine attribute via Terminal:
+```bash
+xattr -cr /Applications/IslandFlow.app
+```
+
+---
+
+## Features & Highlights
 
 - **Notch-Anchored Liquid Surface**: Permanent stationary top-center panel morphing smoothly between collapsed notch geometry (161x32pt) and full expanded island (350x145pt).
 - **Authoritative Hover Engine**: Single interaction state machine (`IslandInteractionController`) supporting customizable open/close delays, spatial grace hit-testing, and interruptible spring animations.
@@ -22,17 +37,15 @@ IslandFlow v1.0.0 is a native macOS Dynamic Island utility designed specifically
 
 ---
 
-## Package Artifacts
+## Package Artifacts & Checksums
 
 - **App Bundle:** `build/releases/IslandFlow.app`
-- **ZIP Release Package:** `build/releases/IslandFlow-1.0.0.zip`
+- **DMG Package:** `build/releases/IslandFlow-1.0.0.dmg`
+- **ZIP Package:** `build/releases/IslandFlow-1.0.0.zip`
 
----
-
-## Verification & Integrity
-
-To verify the SHA-256 checksum of your release ZIP archive:
+### Verifying SHA-256 Hashes
 
 ```bash
+shasum -a 256 build/releases/IslandFlow-1.0.0.dmg
 shasum -a 256 build/releases/IslandFlow-1.0.0.zip
 ```

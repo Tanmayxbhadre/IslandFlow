@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ─────────────────────────────────────────────────────────────────────────────
-# IslandFlow — Production Release Build Script
+# IslandFlow — Local & Production Release Build Script (Phase 15.1)
 # ─────────────────────────────────────────────────────────────────────────────
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -93,35 +93,48 @@ if [ -d "Resources" ]; then
     cp -R Resources/* "$RESOURCES_DIR/" 2>/dev/null || true
 fi
 
-# 5. Code signing
-ENTITLEMENTS_FILE="$PROJECT_DIR/Resources/entitlements.plist"
-
-if [ -n "$SIGNING_IDENTITY" ]; then
-    echo "--> Code signing with Developer ID: $SIGNING_IDENTITY..."
-    codesign --force --options runtime --deep --sign "$SIGNING_IDENTITY" --entitlements "$ENTITLEMENTS_FILE" "$APP_PATH"
-    echo "--> Verifying signature..."
-    codesign --verify --verbose "$APP_PATH"
-    codesign -dv "$APP_PATH"
-else
-    echo "--> Code signing with local ad-hoc signature..."
-    codesign --force --deep --sign - "$APP_PATH"
-    echo "[NOTICE] Signed with AD-HOC identity (Set SIGNING_IDENTITY for production Developer ID signing)"
+# 5. Discover Signing Identities & Apply Signature
+HAS_DEV_ID=false
+if security find-identity -v -p codesigning 2>/dev/null | grep -q "Developer ID Application"; then
+    HAS_DEV_ID=true
 fi
 
-# 6. Notarization check
-if [ "$NOTARIZE" = "1" ] && [ -n "$SIGNING_IDENTITY" ]; then
+ENTITLEMENTS_FILE="$PROJECT_DIR/Resources/entitlements.plist"
+
+if [ "$HAS_DEV_ID" = true ] && [ -n "$SIGNING_IDENTITY" ]; then
+    echo "--> Code signing with Developer ID: $SIGNING_IDENTITY..."
+    codesign --force --options runtime --deep --sign "$SIGNING_IDENTITY" --entitlements "$ENTITLEMENTS_FILE" "$APP_PATH"
+    echo "--> Verifying Developer ID signature..."
+    codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+    codesign -dv --verbose=4 "$APP_PATH"
+else
+    echo "--> Developer ID not configured — creating local/private release."
+    echo "--> Applying local ad-hoc code signature..."
+    codesign --deep --force --sign - "$APP_PATH"
+    echo "--> Verifying ad-hoc code signature..."
+    codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+    codesign -dv --verbose=4 "$APP_PATH"
+fi
+
+# 6. Notarization check (only if Developer ID configured)
+if [ "$NOTARIZE" = "1" ] && [ "$HAS_DEV_ID" = true ] && [ -n "$SIGNING_IDENTITY" ]; then
     echo "--> Submitting to Apple Notary Service..."
     if [ -n "${KEYCHAIN_PROFILE:-}" ]; then
         xcrun notarytool submit "$APP_PATH" --keychain-profile "$KEYCHAIN_PROFILE" --wait
         xcrun stapler staple "$APP_PATH"
     else
-        echo "[WARNING] KEYCHAIN_PROFILE not specified. Skipping notarization submission."
+        echo "[WARNING] KEYCHAIN_PROFILE not specified. Skipping notarization."
     fi
 else
-    echo "--> Notarization skipped (Not configured)."
+    echo "--> Apple Notarization: NOT CONFIGURED (Local/Private build mode)."
 fi
 
-# 7. Copy to final release destination
+# 7. App Bundle Validation
+echo "--> Validating App Bundle structure..."
+test -f "$CONTENTS_DIR/Info.plist" || (echo "ERROR: Missing Info.plist" && exit 1)
+test -x "$MACOS_DIR/IslandFlow" || (echo "ERROR: Missing executable" && exit 1)
+
+# 8. Copy to final release destination
 cp -R "$APP_PATH" "$RELEASES_DIR/"
 cp -R "$APP_PATH" "$PROJECT_DIR/"
 
