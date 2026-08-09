@@ -1,0 +1,8 @@
+.build/
+build/
+build_output/
+*.xcodeproj
+*.xcworkspace
+.DS_Store
+*.swp
+*.tmp
