@@ -44,22 +44,53 @@ public final class IslandPanel: NSPanel {
 
 // MARK: — IslandHostingContainer
 
-/// Simple NSView container for NSHostingView.
-///
-/// Phase 9: No longer owns a NSTrackingArea or onHoverChanged callback.
-/// Hover detection is entirely managed by IslandInteractionController.
-/// This view is a plain transparent pass-through container.
+/// Custom NSView container with precise hit testing.
+/// Only the active visual island geometry intercepts mouse clicks.
+/// All transparent surrounding areas (Chrome tabs, menu bar, desktop) pass clicks
+/// straight through to the underlying windows and applications.
 final class IslandHostingContainer: NSView {
 
-    // Hit testing: pass through to subviews so SwiftUI handles taps/buttons.
     override func hitTest(_ point: NSPoint) -> NSView? {
-        return super.hitTest(point)
+        let progress = AppState.shared.expansionProgress
+        let metrics = ScreenManager.shared.activeScreenMetrics()
+
+        let collapsedWidth: CGFloat = metrics.notchWidth
+        let collapsedHeight: CGFloat = metrics.safeAreaTopInset
+        let expandedWidth: CGFloat = WindowManager.expandedWidth
+        let expandedHeight: CGFloat = WindowManager.expandedHeight
+
+        // Interpolate current active width and height based on expansionProgress
+        let currentWidth = collapsedWidth + (expandedWidth - collapsedWidth) * progress
+        let currentHeight = collapsedHeight + (expandedHeight - collapsedHeight) * progress
+
+        // Island is anchored to the top-center of container view (AppKit Y=0 is bottom)
+        let containerWidth = bounds.width
+        let minX = (containerWidth - currentWidth) / 2.0
+        let minY = bounds.height - currentHeight
+
+        let activeIslandRect = NSRect(x: minX, y: minY, width: currentWidth, height: currentHeight)
+
+        // Add 4pt spatial tolerance padding for comfortable control clicking
+        let paddedActiveRect = activeIslandRect.insetBy(dx: -4.0, dy: -4.0)
+
+        if paddedActiveRect.contains(point) {
+            let hitView = super.hitTest(point)
+            if HoverSettings.shared.debugHoverState {
+                Logger.window.debug("[HitTest] mouse=\(Int(point.x)),\(Int(point.y)) inside=true result=\(hitView?.description ?? "self")")
+            }
+            return hitView
+        }
+
+        if HoverSettings.shared.debugHoverState {
+            Logger.window.debug("[HitTest] mouse=\(Int(point.x)),\(Int(point.y)) inside=false result=PASS_THROUGH")
+        }
+
+        // Return nil so AppKit passes clicks straight through to Chrome, Finder, Menu Bar, etc.
+        return nil
     }
 
-    // No tracking areas — IslandInteractionController handles all hover logic.
     override func updateTrackingAreas() {
         // Intentionally empty: no tracking areas registered.
-        // IslandInteractionController uses NSEvent.addGlobalMonitorForEvents
-        // + addLocalMonitorForEvents with direct NSEvent.mouseLocation checks.
+        // Hover detection is managed by IslandInteractionController.
     }
 }

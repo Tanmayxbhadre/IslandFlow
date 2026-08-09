@@ -80,6 +80,17 @@ public struct IslandContainerView: View {
                     }
                 }
                 .padding(8)
+                .overlay(
+                    Rectangle()
+                        .stroke(Color.red.opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                        .overlay(
+                            Text("CLICK-THROUGH OUTER BOUNDS")
+                                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                .foregroundColor(.red.opacity(0.7))
+                                .padding(2),
+                            alignment: .bottomTrailing
+                        )
+                )
             }
         }
         .frame(width: expandedWidth, height: expandedHeight)
@@ -87,7 +98,7 @@ public struct IslandContainerView: View {
         .onReceive(interactionController.$state) { newState in
             handleInteractionStateChanged(newState)
         }
-        .contentShape(Rectangle())
+        .contentShape(islandShape)
         .onTapGesture { handleTapGesture() }
 
         if #available(macOS 14.0, *) {
