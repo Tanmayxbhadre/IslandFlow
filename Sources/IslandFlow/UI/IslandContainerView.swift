@@ -104,13 +104,12 @@ public struct IslandContainerView: View {
 
     @ViewBuilder
     private var backgroundSurface: some View {
-        if !isHoveredOrExpanded {
-            // Pure solid black — indistinguishable from physical MacBook notch cutout.
-            // NO white stroke outline, NO material overlay, NO drop shadow.
+        ZStack {
+            // Permanent solid black shape — physically matches MacBook camera notch cutout at rest.
             islandShape
                 .fill(Color.black)
-        } else {
-            // Unified expanded island surface. Smooth material depth + subtle stroke outline.
+
+            // Dark glass material depth, stroke outline, and shadow fade in/out smoothly as surface expands.
             islandShape
                 .fill(.ultraThinMaterial)
                 .overlay(islandShape.fill(Color.black.opacity(0.92)))
@@ -129,6 +128,7 @@ public struct IslandContainerView: View {
                     radius: 8,
                     x: 0, y: 3
                 )
+                .opacity(isHoveredOrExpanded ? 1.0 : 0.0)
         }
     }
 
