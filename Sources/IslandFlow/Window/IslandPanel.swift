@@ -1,17 +1,15 @@
 import AppKit
 
-// MARK: — Notification Names
-
-extension Notification.Name {
-    /// Posted when hover state changes. `object` is a `Bool` (true = entered, false = exited).
-    static let islandHoverChanged = Notification.Name("com.islandflow.hoverChanged")
-}
-
 // MARK: — IslandPanel
 
 /// A custom NSPanel configured for non-activating system HUD behavior.
-/// The panel is permanently sized to the maximum expanded island dimensions.
-/// All visible morphing happens within SwiftUI — the panel frame never changes during interaction.
+///
+/// Phase 9 changes:
+///   • `acceptsMouseMovedEvents = true` — ensures the local NSEvent monitor in
+///     `IslandInteractionController` fires when the cursor is over this panel.
+///   • The NSTrackingArea approach from IslandHostingContainer has been removed.
+///     Hover detection is now 100% handled by IslandInteractionController's
+///     global+local event monitors with authoritative point-in-rect checks.
 public final class IslandPanel: NSPanel {
 
     public init(contentRect: NSRect) {
@@ -22,18 +20,21 @@ public final class IslandPanel: NSPanel {
             defer: false
         )
 
-        self.level = WindowConfiguration.windowLevel
-        self.collectionBehavior = WindowConfiguration.collectionBehavior
-        self.animationBehavior = .none
-        self.isOpaque = false
-        self.backgroundColor = .clear
-        self.hasShadow = false          // SwiftUI renders its own drop shadow
-        self.hidesOnDeactivate = false
-        self.ignoresMouseEvents = false
+        self.level                       = WindowConfiguration.windowLevel
+        self.collectionBehavior         = WindowConfiguration.collectionBehavior
+        self.animationBehavior          = .none
+        self.isOpaque                   = false
+        self.backgroundColor            = .clear
+        self.hasShadow                  = false  // SwiftUI renders its own shadow
+        self.hidesOnDeactivate          = false
+        self.ignoresMouseEvents         = false
         self.isMovableByWindowBackground = false
-        self.isReleasedWhenClosed = false
+        self.isReleasedWhenClosed       = false
+        // Required so the local NSEvent monitor in IslandInteractionController
+        // fires for cursor movements over this panel.
+        self.acceptsMouseMovedEvents    = true
 
-        Logger.window.info("[IslandFlow][PANEL CREATE] IslandPanel initialized")
+        Logger.window.info("[IslandFlow][PANEL] IslandPanel initialized (Phase 9)")
     }
 
     // Prevent panel from stealing focus from the active app.
@@ -43,57 +44,22 @@ public final class IslandPanel: NSPanel {
 
 // MARK: — IslandHostingContainer
 
-/// An intermediate NSView that wraps the NSHostingView and owns the stable
-/// NSTrackingArea for hover detection.
+/// Simple NSView container for NSHostingView.
 ///
-/// Why a wrapper view instead of SwiftUI `.onHover`?
-/// SwiftUI's `.onHover` attaches a tracking area to the view's current bounds.
-/// Because the NSHostingView always fills the (large, stationary) panel, the
-/// SwiftUI hover zone would cover the entire 350×145pt panel area at all times.
-/// This wrapper lets us update the tracking rect independently of SwiftUI layout.
-///
-/// The hover zone is the full panel bounds. Since the panel sits at the very top
-/// of the screen (above all menu bar items) and only the center portion is visible
-/// as the island, entering this zone reliably indicates cursor intent on the island.
+/// Phase 9: No longer owns a NSTrackingArea or onHoverChanged callback.
+/// Hover detection is entirely managed by IslandInteractionController.
+/// This view is a plain transparent pass-through container.
 final class IslandHostingContainer: NSView {
 
-    /// Called whenever the cursor enters or exits the tracking zone.
-    /// `true` = entered (hover start), `false` = exited (hover end).
-    var onHoverChanged: ((Bool) -> Void)?
-
-    // MARK: — Tracking area
-
-    override func updateTrackingAreas() {
-        super.updateTrackingAreas()
-        // Remove all existing tracking areas before adding the updated one.
-        for area in trackingAreas {
-            removeTrackingArea(area)
-        }
-        // Track the full view bounds — the panel is already sized to the maximum
-        // island dimensions, so this covers exactly the interaction region.
-        let area = NSTrackingArea(
-            rect: bounds,
-            options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
-            owner: self,
-            userInfo: nil
-        )
-        addTrackingArea(area)
-    }
-
-    // MARK: — Mouse events
-
-    override func mouseEntered(with event: NSEvent) {
-        onHoverChanged?(true)
-    }
-
-    override func mouseExited(with event: NSEvent) {
-        onHoverChanged?(false)
-    }
-
-    // MARK: — Hit testing
-
-    /// Pass hit testing through to subviews (NSHostingView handles SwiftUI taps/clicks).
+    // Hit testing: pass through to subviews so SwiftUI handles taps/buttons.
     override func hitTest(_ point: NSPoint) -> NSView? {
         return super.hitTest(point)
+    }
+
+    // No tracking areas — IslandInteractionController handles all hover logic.
+    override func updateTrackingAreas() {
+        // Intentionally empty: no tracking areas registered.
+        // IslandInteractionController uses NSEvent.addGlobalMonitorForEvents
+        // + addLocalMonitorForEvents with direct NSEvent.mouseLocation checks.
     }
 }

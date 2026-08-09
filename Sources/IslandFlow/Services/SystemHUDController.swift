@@ -2,13 +2,23 @@ import Foundation
 import Combine
 import SwiftUI
 
-/// SystemHUDController — manages island expansion for system HUD events
-/// (volume, brightness, battery) and media state changes.
+/// SystemHUDController — manages islandState (content selection) for system HUD events
+/// and media state changes.
 ///
-/// In Phase 7, this controller sets AppState.islandState (content selection)
-/// and relies on IslandContainerView's .onReceive(appState.$islandState)
-/// to trigger the corresponding expansionProgress change.
-/// It does NOT directly resize the NSPanel — that is permanently stationary.
+/// Phase 9 architecture:
+///   • This controller ONLY changes islandState (what content is shown).
+///   • It NEVER changes expansionProgress (island geometry).
+///   • Before any collapse-triggering content state change, it calls
+///     IslandInteractionController.shared.isCollapseAllowed(reason:).
+///     If the cursor is inside the island region, the collapse is blocked.
+///   • Volume / brightness / battery events:
+///       - If cursor is INSIDE the island → update content only, no auto-collapse.
+///       - If cursor is OUTSIDE → still no geometry change (geometry is separate).
+///   • Media changes NEVER collapse the island.
+///
+/// Collapse invariant:
+///   The island collapses ONLY for reason = VERIFIED_MOUSE_EXIT
+///   (from IslandInteractionController). This class has NO collapse authority.
 @MainActor
 public final class SystemHUDController: ObservableObject {
     public static let shared = SystemHUDController()
@@ -54,28 +64,49 @@ public final class SystemHUDController: ObservableObject {
             .store(in: &cancellables)
     }
 
-    /// Handle a system HUD event (volume / brightness / battery).
-    /// Sets islandState for content selection; IslandContainerView expands via progress.
+    // MARK: — System HUD events (volume / brightness / battery)
+
+    /// Updates content state for system HUD events.
+    /// Does NOT collapse the island — geometry is owned by IslandInteractionController.
     public func handleSystemEvent(_ newState: IslandState) {
         let currentState = AppState.shared.islandState
-
-        // Don't interrupt user-initiated expansion (hover) or higher-priority HUD
-        if AppState.shared.isHovered { return }
-        if case .expanded = currentState { return }
-        if case .mediaExpanded = currentState { return }
         if currentState.priority > newState.priority { return }
 
-        // Set content state — IslandContainerView observes and expands
+        // Update the content state shown inside the island.
+        // IslandContainerView observes this but does NOT change geometry from it.
         AppState.shared.islandState = newState
 
-        // Auto-collapse after display duration
+        // Schedule content auto-reset after the HUD display duration.
+        // IMPORTANT: This ONLY resets the content state (islandState).
+        // It NEVER collapses the island if the cursor is still inside.
         collapseTask?.cancel()
         collapseTask = Task { @MainActor in
             try? await Task.sleep(nanoseconds: UInt64(autoCollapseDuration * 1_000_000_000))
             guard !Task.isCancelled else { return }
-            guard !AppState.shared.isHovered else { return }
             guard AppState.shared.islandState == newState else { return }
 
+            // Guard: do not reset content if cursor is still inside the island.
+            // The island's expanded content should remain appropriate for hover.
+            let ic = IslandInteractionController.shared
+            if ic.isInsideRegion {
+                // Cursor still inside: update content to match hover state
+                Logger.window.debug("""
+                    [Island] HUD auto-reset: cursor inside region — \
+                    updating to hover content, not collapsing
+                    """)
+                if MediaManager.shared.isMediaActive {
+                    AppState.shared.islandState = .mediaExpanded(MediaManager.shared.currentState)
+                } else {
+                    let metrics = ScreenManager.shared.activeScreenMetrics()
+                    AppState.shared.islandState = metrics.hasNotch ? .hover : .expanded
+                }
+                return
+            }
+
+            // Cursor is outside: safe to reset content to collapsed state.
+            // Note: geometry (expansionProgress) is already at 0 if cursor left,
+            // because IslandInteractionController handled that separately.
+            Logger.window.debug("[Island] HUD auto-reset: cursor outside → resetting content")
             let metrics = ScreenManager.shared.activeScreenMetrics()
             if MediaManager.shared.isMediaActive {
                 AppState.shared.islandState = .mediaCompact(MediaManager.shared.currentState)
@@ -85,21 +116,28 @@ public final class SystemHUDController: ObservableObject {
         }
     }
 
-    private func handleMediaStateChanged(_ mediaState: MediaState) {
-        let currentState = AppState.shared.islandState
+    // MARK: — Media state changes
 
-        // Don't interrupt higher-priority HUD events
-        if currentState.priority >= 30 { return }
+    /// Handles media playback changes (track change, play/pause, artwork update).
+    /// NEVER collapses the island — only updates the content state.
+    private func handleMediaStateChanged(_ mediaState: MediaState) {
+        let ic = IslandInteractionController.shared
 
         if MediaManager.shared.isMediaActive {
-            if AppState.shared.isHovered {
+            // Update content to match current hover state.
+            if ic.isInsideRegion {
                 AppState.shared.islandState = .mediaExpanded(mediaState)
             } else {
                 AppState.shared.islandState = .mediaCompact(mediaState)
             }
         } else {
-            let metrics = ScreenManager.shared.activeScreenMetrics()
-            AppState.shared.islandState = metrics.hasNotch ? .notchCover : .compact
+            // Media stopped — only update content if cursor is outside.
+            // If cursor is inside, keep the island at hover/expanded state.
+            if !ic.isInsideRegion {
+                let metrics = ScreenManager.shared.activeScreenMetrics()
+                AppState.shared.islandState = metrics.hasNotch ? .notchCover : .compact
+            }
+            // If inside: leave islandState as-is (cursor will determine what to show)
         }
     }
 }
