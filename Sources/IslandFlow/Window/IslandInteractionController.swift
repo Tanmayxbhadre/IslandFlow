@@ -1,39 +1,32 @@
 import AppKit
 import Combine
+import SwiftUI
+
+// MARK: — Collapse Reason
+
+public enum CollapseReason: CustomStringConvertible, Equatable {
+    case verifiedMouseExit
+    case manual
+    case hoverDisabled
+
+    public var description: String {
+        switch self {
+        case .verifiedMouseExit: return "VERIFIED_MOUSE_EXIT"
+        case .manual:            return "MANUAL_TOGGLE"
+        case .hoverDisabled:     return "HOVER_DISABLED"
+        }
+    }
+}
 
 // MARK: — IslandInteractionController
 
-/// Single authoritative source of truth for island hover/expansion interaction.
+/// Authoritative single interaction controller & state machine for IslandFlow.
 ///
-/// ┌─────────────────────────────────────────────────────────────────────────┐
-/// │  PHASE 9 INTERACTION ARCHITECTURE                                       │
-/// │                                                                         │
-/// │  Problem with NSTrackingArea (Phase 7/8):                               │
-/// │    NSHostingView child views (SwiftUI buttons, text, etc.) interfere    │
-/// │    with the parent container's tracking area. AppKit generates          │
-/// │    mouseExited on the container when cursor enters a child view,        │
-/// │    even when the cursor never left the panel bounds. This caused        │
-/// │    spurious isHovered=false → collapse bugs.                            │
-/// │                                                                         │
-/// │  Solution (Phase 9):                                                    │
-/// │    Use a global+local NSEvent monitor to capture every cursor movement. │
-/// │    On each event, call NSEvent.mouseLocation and check against a stable │
-/// │    interactionRegion: NSRect. No child-view interference possible.      │
-/// │                                                                         │
-/// │  interactionRegion = expanded panel bounds in screen coordinates        │
-/// │    (AppKit bottom-origin). Computed once, updated only on               │
-/// │    screen/space changes. NEVER changes during hover animation.          │
-/// │                                                                         │
-/// │  State machine:                                                         │
-/// │    .collapsed  cursor outside, progress=0.0                             │
-/// │    .opening    cursor entered, progress 0→1 (animation running)         │
-/// │    .expanded   cursor inside, progress=1.0 (animation complete)         │
-/// │    .closing    cursor exited, grace period, progress 1→0               │
-/// │                                                                         │
-/// │  Only this controller can trigger expand/collapse geometry changes.     │
-/// │  SystemHUDController, MediaManager, SpaceTransitions — NONE of these   │
-/// │  can collapse the island directly. They use isCollapseAllowed() guard.  │
-/// └─────────────────────────────────────────────────────────────────────────┘
+/// Phase 10 Architecture:
+///   • Fully driven by `HoverSettings`.
+///   • Performs authoritative point-in-rect checks against `notchRegion` and `expandedIslandRegion`.
+///   • Respects `openDelay`, `closeDelay`, `hoverGracePeriod`, `hoverSensitivity`, and HUD ignore rules.
+///   • Handles smooth animation reversal and manual overrides without corrupting state.
 @MainActor
 public final class IslandInteractionController: ObservableObject {
     public static let shared = IslandInteractionController()
@@ -46,66 +39,111 @@ public final class IslandInteractionController: ObservableObject {
         case expanded
         case closing
 
-        /// True while the island is or is becoming open.
-        var isOpenOrOpening: Bool { self == .opening || self == .expanded }
+        public var isOpenOrOpening: Bool { self == .opening || self == .expanded }
     }
 
     @Published public private(set) var state: InteractionState = .collapsed
+    @Published public private(set) var lastCollapseReason: CollapseReason?
+    @Published public private(set) var isPendingOpen: Bool = false
+    @Published public private(set) var isPendingClose: Bool = false
 
-    /// Convenience accessor for external components needing a simple bool.
+    /// Fast accessor for whether mouse is inside active interaction bounds
     public var isInsideRegion: Bool { state.isOpenOrOpening }
 
-    // MARK: — Stable interaction region (AppKit screen coordinates, bottom-origin)
+    // MARK: — Geometry Regions (AppKit screen coordinates, bottom-origin)
 
-    private var interactionRegion: NSRect = .zero
+    private var cachedMetrics: ScreenMetrics?
+    private var baseNotchRegion: NSRect = .zero
+    private var baseExpandedRegion: NSRect = .zero
 
-    // MARK: — Event monitors (one of each, never duplicated)
+    // MARK: — Event monitors
 
     private var globalMonitor: Any?
     private var localMonitor: Any?
 
-    // MARK: — Single close-grace task (cancelled on re-entry)
+    // MARK: — Timers / Tasks
 
+    private var openTask: Task<Void, Never>?
     private var closeTask: Task<Void, Never>?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: — Init
 
-    private init() {}
+    private init() {
+        // Observe settings changes to re-evaluate mouse position or active regions
+        HoverSettings.shared.objectWillChange
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                DispatchQueue.main.async {
+                    self?.reevaluateSettings()
+                }
+            }
+            .store(in: &cancellables)
+    }
 
-    // MARK: — Setup (called once from WindowManager.setupWindow)
+    // MARK: — Setup & Region Computations
 
     public func setup(with metrics: ScreenMetrics) {
-        interactionRegion = computeRegion(from: metrics)
-        Logger.window.info("[Island][INTERACT] Setup region: \(String(describing: self.interactionRegion))")
+        cachedMetrics = metrics
+        updateRegions(with: metrics)
+        Logger.window.info("[Hover] Setup regions — Notch: \(String(describing: self.baseNotchRegion)), Expanded: \(String(describing: self.baseExpandedRegion))")
         startMonitoring()
     }
 
-    /// Update interaction region after screen/space repositioning.
-    /// Must NOT change interactionState — repositioning is transparent to hover.
     public func updateRegion(with metrics: ScreenMetrics) {
-        interactionRegion = computeRegion(from: metrics)
-        Logger.window.debug("[Island][INTERACT] Updated region: \(String(describing: self.interactionRegion))")
+        cachedMetrics = metrics
+        updateRegions(with: metrics)
     }
 
-    private func computeRegion(from metrics: ScreenMetrics) -> NSRect {
-        let w = WindowManager.expandedWidth
-        let h = WindowManager.expandedHeight
+    private func updateRegions(with metrics: ScreenMetrics) {
         let cx = metrics.topFlushPoint.x
-        let x = cx - w / 2.0
-        let y: CGFloat = metrics.hasNotch
-            ? metrics.screenFrame.maxY - h
-            : metrics.visibleFrame.maxY - h - 4.0
-        return NSRect(x: x, y: y, width: w, height: h)
+        
+        // 1. Expanded Island Region
+        let ew = WindowManager.expandedWidth
+        let eh = WindowManager.expandedHeight
+        let ex = cx - ew / 2.0
+        let ey: CGFloat = metrics.hasNotch
+            ? metrics.screenFrame.maxY - eh
+            : metrics.visibleFrame.maxY - eh - 4.0
+        baseExpandedRegion = NSRect(x: ex, y: ey, width: ew, height: eh)
+
+        // 2. Notch Region
+        let nw = metrics.notchWidth
+        let nh = metrics.safeAreaTopInset
+        let nx = cx - nw / 2.0
+        let ny = metrics.screenFrame.maxY - nh
+        baseNotchRegion = NSRect(x: nx, y: ny, width: nw, height: nh)
     }
 
-    // MARK: — Monitoring (started once, never duplicated)
+    /// Computes active hit region based on current state & settings (sensitivity, requireNotchHover, keepOpenInsideIsland)
+    public var activeInteractionRegion: NSRect {
+        let settings = HoverSettings.shared
+        let hPad = settings.hoverSensitivity.horizontalPadding
+        let vPad = settings.hoverSensitivity.verticalPadding
+
+        let notchPadded = baseNotchRegion.insetBy(dx: -hPad, dy: -vPad)
+        let expandedPadded = baseExpandedRegion.insetBy(dx: -hPad, dy: -vPad)
+
+        if state == .collapsed {
+            if settings.requireNotchHover {
+                return notchPadded
+            } else {
+                return notchPadded.union(expandedPadded)
+            }
+        } else {
+            if settings.keepOpenInsideIsland {
+                return notchPadded.union(expandedPadded)
+            } else {
+                return notchPadded
+            }
+        }
+    }
+
+    // MARK: — Monitoring
 
     private func startMonitoring() {
-        guard globalMonitor == nil else { return } // Idempotent
+        guard globalMonitor == nil else { return }
 
-        // Global monitor: fires for cursor events delivered to OTHER applications.
-        // Since IslandFlow uses .accessory activation policy, it is never the
-        // frontmost app. All cursor movements over other apps fire this monitor.
         globalMonitor = NSEvent.addGlobalMonitorForEvents(
             matching: [.mouseMoved, .leftMouseDragged, .rightMouseDragged]
         ) { [weak self] _ in
@@ -114,8 +152,6 @@ public final class IslandInteractionController: ObservableObject {
             }
         }
 
-        // Local monitor: fires for cursor events delivered to OUR application
-        // (e.g., when cursor is over our NSPanel with acceptsMouseMovedEvents=true).
         localMonitor = NSEvent.addLocalMonitorForEvents(
             matching: [.mouseMoved, .leftMouseDragged, .rightMouseDragged]
         ) { [weak self] event in
@@ -125,96 +161,237 @@ public final class IslandInteractionController: ObservableObject {
             return event
         }
 
-        Logger.window.info("[Island][INTERACT] Mouse monitoring started (global + local)")
+        Logger.window.info("[Hover] Mouse monitoring started")
     }
 
-    // MARK: — Authoritative position check (called on every cursor movement)
+    // MARK: — Position Verification
 
     public func checkMousePosition() {
-        guard !interactionRegion.isEmpty else { return }
-        let loc    = NSEvent.mouseLocation
-        let inside = interactionRegion.contains(loc)
+        let settings = HoverSettings.shared
+        guard settings.hoverEnabled else {
+            if isPendingOpen || isPendingClose {
+                openTask?.cancel()
+                openTask = nil
+                closeTask?.cancel()
+                closeTask = nil
+                isPendingOpen = false
+                isPendingClose = false
+            }
+            return
+        }
+
+        let region = activeInteractionRegion
+        guard !region.isEmpty else { return }
+
+        let mouseLoc = NSEvent.mouseLocation
+        let inside = region.contains(mouseLoc)
 
         switch state {
         case .collapsed:
-            if inside  { didEnter() }
-        case .opening:
-            if !inside { didExit() }
-        case .expanded:
-            if !inside { didExit() }
+            if inside {
+                scheduleOpen()
+            } else if isPendingOpen {
+                cancelOpenDelay(reason: "cursorExitedBeforeOpenDelay")
+            }
+        case .opening, .expanded:
+            if !inside {
+                if settings.collapseOnMouseExit {
+                    scheduleClose()
+                }
+            } else if isPendingClose {
+                cancelClose(reason: "cursorReturnedDuringGrace")
+            }
         case .closing:
-            if inside  { cancelClose() }
+            if inside {
+                cancelClose(reason: "mouseEnteredDuringClosing")
+            }
         }
     }
 
-    // MARK: — State transitions
+    // MARK: — Open Sequence (with Open Delay)
 
-    private func didEnter() {
+    private func scheduleOpen() {
+        let settings = HoverSettings.shared
+        guard settings.openOnNotchHover else { return }
         guard state == .collapsed else { return }
+        guard !isPendingOpen else { return }
+
         closeTask?.cancel()
         closeTask = nil
+        isPendingClose = false
+
+        if settings.openDelay <= 0 {
+            executeOpen()
+            return
+        }
+
+        isPendingOpen = true
+        Logger.window.debug("[Hover] OPEN_DELAY_STARTED delay=\(settings.openDelay)ms")
+
+        openTask?.cancel()
+        openTask = Task { @MainActor in
+            let ns = UInt64(settings.openDelay) * 1_000_000
+            try? await Task.sleep(nanoseconds: ns)
+
+            guard !Task.isCancelled else { return }
+            self.isPendingOpen = false
+
+            // Verify cursor is still inside
+            let loc = NSEvent.mouseLocation
+            if self.activeInteractionRegion.contains(loc) {
+                self.executeOpen()
+            } else {
+                Logger.window.debug("[Hover] OPEN_DELAY_CANCELLED reason=cursorLeftBeforeDelayEnded")
+            }
+        }
+    }
+
+    private func cancelOpenDelay(reason: String) {
+        openTask?.cancel()
+        openTask = nil
+        if isPendingOpen {
+            isPendingOpen = false
+            Logger.window.debug("[Hover] OPEN_DELAY_CANCELLED reason=\(reason)")
+        }
+    }
+
+    private func executeOpen() {
+        openTask?.cancel()
+        openTask = nil
+        isPendingOpen = false
         state = .opening
-        Logger.window.info("[Island] event=mouseEntered state→opening")
+        Logger.window.info("[Hover] ENTER_NOTCH -> OPENING")
     }
 
-    /// Call when the expansion animation completes (progress reached 1.0).
     public func notifyExpandedComplete() {
-        if state == .opening { state = .expanded }
+        if state == .opening {
+            state = .expanded
+            Logger.window.info("[Hover] EXPANDED")
+        }
     }
 
-    private func didExit() {
+    // MARK: — Close Sequence (with Close Delay + Grace Period)
+
+    private func scheduleClose() {
+        let settings = HoverSettings.shared
         guard state == .opening || state == .expanded else { return }
+        guard !isPendingClose else { return }
+
+        openTask?.cancel()
+        openTask = nil
+        isPendingOpen = false
+
+        let totalDelayMs = settings.closeDelay + settings.hoverGracePeriod
+        isPendingClose = true
         state = .closing
+        Logger.window.debug("[Hover] EXIT_DETECTED -> CLOSE_DELAY_STARTED totalMs=\(totalDelayMs)")
 
         closeTask?.cancel()
         closeTask = Task { @MainActor in
-            Logger.window.debug("[Island] event=closeScheduled gracePeriod=200ms")
+            let ns = UInt64(totalDelayMs) * 1_000_000
+            try? await Task.sleep(nanoseconds: ns)
 
-            try? await Task.sleep(nanoseconds: 200_000_000) // 200 ms grace
             guard !Task.isCancelled else {
-                Logger.window.debug("[Island] event=closeCancelled reason=taskCancelled")
+                Logger.window.debug("[Hover] CLOSE_CANCELLED reason=taskCancelled")
                 return
             }
 
-            // Final authoritative check: only collapse if cursor genuinely outside.
+            self.isPendingClose = false
+
+            // Authoritative final position verification
             let loc = NSEvent.mouseLocation
-            if self.interactionRegion.contains(loc) {
-                Logger.window.debug("[Island] event=closeCancelled reason=cursorReturnedDuringGrace")
+            if self.activeInteractionRegion.contains(loc) {
+                Logger.window.debug("[Hover] CLOSE_CANCELLED reason=cursorReturnedDuringGrace")
                 self.state = .expanded
                 return
             }
 
-            Logger.window.info("[Island] event=closing reason=VERIFIED_MOUSE_EXIT")
-            self.state = .collapsed
+            self.executeCollapse(reason: .verifiedMouseExit)
         }
     }
 
-    private func cancelClose() {
+    private func cancelClose(reason: String) {
         closeTask?.cancel()
         closeTask = nil
-        state = .expanded
-        Logger.window.debug("[Island] event=closeCancelled reason=mouseEnteredDuringGrace")
+        if isPendingClose || state == .closing {
+            isPendingClose = false
+            state = .expanded
+            Logger.window.debug("[Hover] CLOSE_CANCELLED reason=\(reason)")
+        }
     }
 
-    // MARK: — External collapse guard
+    public func executeCollapse(reason: CollapseReason) {
+        closeTask?.cancel()
+        closeTask = nil
+        openTask?.cancel()
+        openTask = nil
+        isPendingOpen = false
+        isPendingClose = false
 
-    /// Returns `true` only when an external component (HUD, media, space)
-    /// is permitted to update island content state toward collapse.
-    ///
-    /// This is called by SystemHUDController before updating islandState.
-    /// If the cursor is inside the interaction region, any collapse is blocked.
-    ///
-    /// The island collapses ONLY for reason = VERIFIED_MOUSE_EXIT.
-    public func isCollapseAllowed(reason: String) -> Bool {
-        let loc = NSEvent.mouseLocation
-        if interactionRegion.contains(loc) {
-            Logger.window.warning("[Island] Ignored collapse request: reason=\(reason) cursor=insideRegion")
-            return false
-        }
+        lastCollapseReason = reason
+        state = .collapsed
+        Logger.window.info("[Hover] COLLAPSE reason=\(reason.description)")
+    }
+
+    // MARK: — Manual Toggle (⌘E)
+
+    public func toggleManual() {
+        openTask?.cancel()
+        openTask = nil
+        closeTask?.cancel()
+        closeTask = nil
+        isPendingOpen = false
+        isPendingClose = false
+
         if state.isOpenOrOpening {
-            Logger.window.warning("[Island] Ignored collapse request: reason=\(reason) state=\(String(describing: self.state))")
+            executeCollapse(reason: .manual)
+        } else {
+            state = .opening
+            Logger.window.info("[Hover] MANUAL_TOGGLE -> OPENING")
+        }
+    }
+
+    // MARK: — External Collapse Guard
+
+    public func isCollapseAllowed(reason: String) -> Bool {
+        let settings = HoverSettings.shared
+
+        // Specific setting checks
+        if reason.lowercased().contains("volume") && settings.ignoreVolumeHUD {
+            Logger.window.warning("[Hover] IGNORED_INVALID_COLLAPSE reason=VOLUME_CHANGE")
             return false
         }
+        if reason.lowercased().contains("brightness") && settings.ignoreBrightnessHUD {
+            Logger.window.warning("[Hover] IGNORED_INVALID_COLLAPSE reason=BRIGHTNESS_CHANGE")
+            return false
+        }
+        if reason.lowercased().contains("media") && settings.ignoreMediaUpdates {
+            Logger.window.warning("[Hover] IGNORED_INVALID_COLLAPSE reason=MEDIA_UPDATE")
+            return false
+        }
+        if reason.lowercased().contains("space") && settings.ignoreSpaceChanges {
+            Logger.window.warning("[Hover] IGNORED_INVALID_COLLAPSE reason=SPACE_CHANGE")
+            return false
+        }
+
+        let loc = NSEvent.mouseLocation
+        if activeInteractionRegion.contains(loc) {
+            Logger.window.warning("[Hover] IGNORED_INVALID_COLLAPSE reason=\(reason) (cursor inside region)")
+            return false
+        }
+
+        if state.isOpenOrOpening && !settings.collapseOnMouseExit {
+            Logger.window.warning("[Hover] IGNORED_INVALID_COLLAPSE reason=\(reason) (collapseOnMouseExit disabled)")
+            return false
+        }
+
         return true
+    }
+
+    private func reevaluateSettings() {
+        if let metrics = cachedMetrics {
+            updateRegions(with: metrics)
+        }
+        checkMousePosition()
     }
 }

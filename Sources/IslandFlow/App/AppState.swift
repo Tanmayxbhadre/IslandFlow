@@ -12,7 +12,6 @@ public final class AppState: ObservableObject {
 
     /// Master expansion value: 0.0 = exact collapsed notch, 1.0 = fully expanded island.
     /// Every visual dimension (width, height, cornerRadius, content opacity) derives from this.
-    /// Only modified by IslandContainerView (hover) and expand/collapse methods below.
     @Published public var expansionProgress: CGFloat = 0.0
 
     @Published public var isHovered: Bool = false
@@ -21,7 +20,8 @@ public final class AppState: ObservableObject {
     private init() {}
 
     public func toggleState() {
-        Logger.state.info("Island state changed to \(String(describing: self.islandState))")
+        IslandInteractionController.shared.toggleManual()
+        Logger.state.info("Manual toggle triggered")
     }
 
     public func setHovered(_ hovered: Bool) {

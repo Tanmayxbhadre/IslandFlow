@@ -3,43 +3,19 @@ import Combine
 
 /// IslandContainerView — the entire island rendered inside the stationary NSPanel canvas.
 ///
-/// ┌─────────────────────────────────────────────────────────────────────────────┐
-/// │  PHASE 9 INTERACTION MODEL                                                  │
-/// │                                                                             │
-/// │  ONE source of truth for geometry: IslandInteractionController.state        │
-/// │                                                                             │
-/// │  .opening  → withAnimation { expansionProgress = 1.0 }                     │
-/// │  .closing  → withAnimation { expansionProgress = 0.0 }                     │
-/// │  .collapsed→ (already at 0.0, no action)                                    │
-/// │  .expanded → (already at 1.0, no action)                                   │
-/// │                                                                             │
-/// │  NO other component can collapse this view:                                 │
-/// │    • Volume change     → does NOT collapse                                  │
-/// │    • Brightness change → does NOT collapse                                  │
-/// │    • Track change      → does NOT collapse                                  │
-/// │    • Space switch      → does NOT collapse                                  │
-/// │    • Battery update    → does NOT collapse                                  │
-/// │                                                                             │
-/// │  Only VERIFIED_MOUSE_EXIT from IslandInteractionController collapses.       │
-/// │                                                                             │
-/// │  Content state (.islandState) changes are accepted without geometry effect: │
-/// │    MediaView content updates immediately when islandState changes.          │
-/// │    Geometry (expansionProgress) only changes from interactionState.         │
-/// │                                                                             │
-/// │  Panel coordinate system:                                                   │
-/// │    y = 0..collapsedHeight (32pt) → NOTCH SAFE ZONE (no content here)       │
-/// │    y = collapsedHeight..expandedHeight → CONTENT ZONE (113pt)              │
-/// └─────────────────────────────────────────────────────────────────────────────┘
+/// Phase 10 Model:
+///   • Animation spring parameters derived from HoverSettings.shared.animationSpeed.
+///   • Expansion progress is synchronized with AppState.shared for debug monitoring.
+///   • HoverDebugView overlay conditionally displayed when debugHoverState is enabled.
 public struct IslandContainerView: View {
     @ObservedObject private var appState:              AppState                    = AppState.shared
     @ObservedObject private var mediaManager:          MediaManager                = MediaManager.shared
     @ObservedObject private var interactionController: IslandInteractionController = IslandInteractionController.shared
+    @ObservedObject private var settings:             HoverSettings               = HoverSettings.shared
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // MARK: — Master expansion state
 
-    /// The ONLY value that drives geometry and appearance.
-    /// Changed ONLY by handleInteractionStateChanged(). Never by HUD/media.
     @State private var expansionProgress: CGFloat = 0.0
 
     // MARK: — Fixed geometry constants
@@ -69,24 +45,20 @@ public struct IslandContainerView: View {
 
     // MARK: — Animation
 
-    /// Single spring — matches LiquidIslandShape.animatableData interpolation.
     private var islandAnimation: Animation {
-        reduceMotion
-            ? .linear(duration: 0.12)
-            : .spring(response: 0.28, dampingFraction: 0.92)
+        if reduceMotion {
+            return .linear(duration: 0.12)
+        }
+        let speed = settings.animationSpeed
+        return .spring(response: speed.response, dampingFraction: speed.dampingFraction)
     }
 
     // MARK: — Derived appearance
 
-    /// Glass + stroke + shadow fade in from p=0.35, complete at p=0.90.
-    /// At p<0.35, island is pure black (notch-stretching feel).
     private var surfaceDecorationOpacity: Double {
         max(0, min(1, (Double(expansionProgress) - 0.35) / 0.55))
     }
 
-    /// Content fades in from p=0.45, complete at p=0.75.
-    /// Ensures content only appears when island is wide enough (~246pt) to avoid
-    /// horizontal clipping of left-aligned artwork.
     private var contentOpacity: Double {
         max(0, min(1, (Double(expansionProgress) - 0.45) / 0.30))
     }
@@ -97,21 +69,32 @@ public struct IslandContainerView: View {
         ZStack(alignment: .top) {
             backgroundSurface
             contentLayer
+            
+            if settings.debugHoverState {
+                VStack {
+                    Spacer()
+                    HStack {
+                        HoverDebugView()
+                        Spacer()
+                    }
+                }
+                .padding(8)
+            }
         }
         .frame(width: expandedWidth, height: expandedHeight)
-        // ONE spring animation for all geometry and appearance.
         .animation(islandAnimation, value: expansionProgress)
-        // ── Interaction state subscriber ──────────────────────────────────
-        // ONLY source of geometry (expansionProgress) changes.
+        .onChange(of: expansionProgress) { _, newValue in
+            appState.expansionProgress = newValue
+            if newValue >= 0.999 {
+                interactionController.notifyExpandedComplete()
+            }
+        }
         .onReceive(interactionController.$state) { newState in
             handleInteractionStateChanged(newState)
         }
-        // ── Content state subscriber ──────────────────────────────────────
-        // Updates content display (MediaView, HUD views) WITHOUT affecting geometry.
         .onReceive(appState.$islandState) { newState in
             handleContentStateChanged(newState)
         }
-        // Tap: manual expand/collapse (content area clicks)
         .contentShape(Rectangle())
         .onTapGesture { handleTapGesture() }
     }
@@ -121,15 +104,9 @@ public struct IslandContainerView: View {
     @ViewBuilder
     private var backgroundSurface: some View {
         ZStack {
-            // ── Solid black (always present) ─────────────────────────────
-            // At p=0 covers exactly the physical notch. Grows as island opens.
-            // This is the "notch stretching" effect — pure black, no decoration.
             islandShape
                 .fill(Color.black)
 
-            // ── Glass decoration (fades in at p≥0.35) ────────────────────
-            // Appears after the black surface has already grown significantly,
-            // so the first ~35% of expansion feels like the notch itself moving.
             islandShape
                 .fill(.ultraThinMaterial)
                 .overlay(islandShape.fill(Color.black.opacity(0.88)))
@@ -150,25 +127,11 @@ public struct IslandContainerView: View {
 
     // MARK: — Content Layer
 
-    /// Layout:
-    ///   VStack {
-    ///     Color.clear (height=32pt = notch safe zone)
-    ///     ZStack { MediaView / islandHoverHint } (height=113pt = content zone)
-    ///   }
-    ///
-    /// The LiquidIslandShape clip progressively reveals content as height grows.
-    /// At p=0: island bottom edge = y=32, so ALL content (starting at y=32)
-    ///   is exactly at the clip boundary — nothing visible yet.
-    /// At p=0.5: island bottom ≈ y=88 — top 56pt of content zone revealed.
-    /// At p=1.0: island fills full canvas — all 113pt of content revealed.
     @ViewBuilder
     private var contentLayer: some View {
         VStack(spacing: 0) {
-            // NOTCH SAFE ZONE: content never enters y=0..collapsedHeight.
-            // Geometry-derived: collapsedHeight = safeAreaTopInset = 32pt.
             Color.clear.frame(height: collapsedHeight)
 
-            // CONTENT ZONE: all media/hint content lives below the notch.
             ZStack {
                 MediaView(state: mediaManager.currentState)
                     .opacity(mediaManager.isMediaActive ? 1.0 : 0.0)
@@ -209,16 +172,13 @@ public struct IslandContainerView: View {
         .frame(width: expandedWidth, height: contentHeight)
     }
 
-    // MARK: — Interaction State Handler (GEOMETRY AUTHORITY)
+    // MARK: — Interaction State Handler
 
-    /// The ONLY method that changes expansionProgress.
-    /// Called by IslandInteractionController state changes (hover in/out).
     private func handleInteractionStateChanged(
         _ newState: IslandInteractionController.InteractionState
     ) {
         switch newState {
         case .opening:
-            // Cursor entered — expand immediately.
             appState.setHovered(true)
             expandContentState()
             withAnimation(islandAnimation) {
@@ -227,7 +187,6 @@ public struct IslandContainerView: View {
             Logger.window.info("[Island] geometry: expanding progress=1.0")
 
         case .closing, .collapsed:
-            // Cursor exited (with grace period verified).
             appState.setHovered(false)
             collapseContentState()
             withAnimation(islandAnimation) {
@@ -236,24 +195,13 @@ public struct IslandContainerView: View {
             Logger.window.info("[Island] geometry: collapsing progress=0.0 reason=VERIFIED_MOUSE_EXIT")
 
         case .expanded:
-            // Already fully open — no geometry change needed.
             break
         }
     }
 
-    // MARK: — Content State Handler (CONTENT ONLY — NO GEOMETRY)
+    // MARK: — Content State Handler
 
-    /// Handles islandState changes from SystemHUDController and MediaManager.
-    ///
-    /// IMPORTANT: This method NEVER changes expansionProgress.
-    /// Content can change (new song, volume indicator) without affecting geometry.
-    /// The island opens/closes ONLY based on cursor position via IslandInteractionController.
     private func handleContentStateChanged(_ state: IslandState) {
-        // No geometry action. The content (MediaView/HUD views) reads from
-        // appState.islandState and mediaManager.currentState reactively.
-        // All we do here is ensure the content selection is coherent.
-        //
-        // Logging for debug: if a collapse request slips through (should never happen):
         switch state {
         case .notchCover, .compact:
             if interactionController.isInsideRegion {
@@ -295,6 +243,5 @@ public struct IslandContainerView: View {
                 appState.islandState = .mediaExpanded(mediaManager.currentState)
             }
         }
-        // Tap does not change expansionProgress — hover state is authoritative.
     }
 }
