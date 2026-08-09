@@ -38,11 +38,11 @@ public struct IslandContainerView: View {
     }
 
     // Spring animation used for all geometry + content transitions.
-    // Matching this in WindowManager ensures panel frame and SwiftUI shape animate in lock-step.
+    // Response 0.28s + Damping 0.86 provides an Alcove-style liquid opening: fast initial response, smooth expansion, soft settling.
     private var islandAnimation: Animation {
         reduceMotion
             ? .linear(duration: 0.12)
-            : .spring(response: 0.26, dampingFraction: 0.88)
+            : .spring(response: 0.28, dampingFraction: 0.86)
     }
 
     // The shape that fills, strokes, and clips the island.
@@ -61,11 +61,12 @@ public struct IslandContainerView: View {
 
             // ── Content ────────────────────────────────────────────────────
             // Always in the hierarchy, opacity-faded when not relevant.
-            // Clipped by the SAME FluidIslandShape, so content is physically
-            // swallowed as the island contracts into the notch.
+            // Scaled from top anchor (0.94 -> 1.0) and clipped by the SAME FluidIslandShape,
+            // so content liquidly emerges from and swallows into the notch.
             contentLayer
-                .clipShape(islandShape)
+                .scaleEffect(isHoveredOrExpanded ? 1.0 : 0.94, anchor: .top)
                 .opacity(contentOpacity)
+                .clipShape(islandShape)
         }
         // The frame is what SwiftUI animates — width & height interpolate smoothly.
         // FluidIslandShape.path(in:) is called by SwiftUI every frame with the
@@ -207,9 +208,9 @@ public struct IslandContainerView: View {
                 expandIsland()
             }
         } else {
-            // Short grace period — if cursor returns, task is cancelled and island stays open.
+            // Short 150ms grace period — if cursor returns, task is cancelled and island stays open.
             hoverTask = Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 200_000_000) // 200 ms
+                try? await Task.sleep(nanoseconds: 150_000_000) // 150 ms
                 guard !Task.isCancelled else { return }
                 withAnimation(islandAnimation) {
                     collapseIsland()

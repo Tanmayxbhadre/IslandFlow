@@ -53,17 +53,19 @@ public final class WindowManager: ObservableObject {
             self.isSpaceTransitioning = true
             self.spaceLockTask?.cancel()
             self.spaceLockTask = Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 350_000_000) // 350 ms space transition lock
+                try? await Task.sleep(nanoseconds: 400_000_000) // 400 ms space transition lock
                 guard !Task.isCancelled else { return }
                 self.isSpaceTransitioning = false
-                Logger.window.info("[IslandFlow][SPACE] Space transition lock released")
+                Logger.window.info("[IslandFlow][SPACE] Space transition lock released — re-verifying alignment")
+                self.updatePanelFrame(for: AppState.shared.islandState)
             }
         }
     }
 
     @objc private func handleScreenParametersChanged() {
         Task { @MainActor in
-            Logger.window.info("[IslandFlow][SCREEN] Screen parameters changed")
+            Logger.window.info("[IslandFlow][SCREEN] Screen parameters changed — invalidating cache")
+            ScreenManager.shared.invalidateCache()
             self.updatePanelFrame(for: AppState.shared.islandState)
         }
     }
@@ -131,17 +133,19 @@ public final class WindowManager: ObservableObject {
         let metrics = ScreenManager.shared.activeScreenMetrics()
         let newFrame = panelFrame(for: state, metrics: metrics)
 
+        let targetTop = metrics.screenFrame.maxY
+        let actualTop = newFrame.origin.y + newFrame.height
+        let deltaY = abs(targetTop - actualTop)
+
         Logger.window.debug("""
             [IslandFlow][PANEL FRAME] State→\(String(describing: state)) \
-            frame:\(String(describing: newFrame))
+            frame:\(String(describing: newFrame)) \
+            targetTop:\(targetTop) actualTop:\(actualTop) deltaY:\(deltaY)
             """)
 
-        NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = animationDuration
-            ctx.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-            ctx.allowsImplicitAnimation = true
-            panel.animator().setFrame(newFrame, display: true, animate: true)
-        }
+        // Direct frame snapping without AppKit window movement animation.
+        // SwiftUI inner component handles all smooth liquid morphing animations.
+        panel.setFrame(newFrame, display: true)
     }
 
     // MARK: — Frame calculation

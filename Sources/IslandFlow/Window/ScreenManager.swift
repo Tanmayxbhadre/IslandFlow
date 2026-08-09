@@ -26,9 +26,25 @@ public struct ScreenMetrics {
 public final class ScreenManager {
     public static let shared = ScreenManager()
     
+    private var cachedNotchMetrics: ScreenMetrics?
+    
     private init() {}
     
+    public func invalidateCache() {
+        cachedNotchMetrics = nil
+    }
+    
     public func activeScreenMetrics() -> ScreenMetrics {
+        if let cached = cachedNotchMetrics {
+            return cached
+        }
+        
+        let metrics = computeScreenMetrics()
+        cachedNotchMetrics = metrics
+        return metrics
+    }
+    
+    private func computeScreenMetrics() -> ScreenMetrics {
         // Prefer the built-in notched display as the authoritative anchor for IslandFlow.
         let screen: NSScreen
         if #available(macOS 12.0, *), let notchScreen = NSScreen.screens.first(where: { $0.safeAreaInsets.top > 0 }) {
