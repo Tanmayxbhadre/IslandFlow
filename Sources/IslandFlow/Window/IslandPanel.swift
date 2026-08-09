@@ -15,6 +15,7 @@ public final class IslandPanel: NSPanel {
         self.collectionBehavior = WindowConfiguration.collectionBehavior
         
         // Key floating HUD settings:
+        self.animationBehavior = .none
         self.isOpaque = false
         self.backgroundColor = .clear
         self.hasShadow = false // SwiftUI handles subtle outer glow/shadow
@@ -23,7 +24,7 @@ public final class IslandPanel: NSPanel {
         self.isMovableByWindowBackground = false
         self.isReleasedWhenClosed = false
         
-        Logger.window.info("IslandPanel initialized successfully")
+        Logger.window.info("[IslandFlow][PANEL CREATE] IslandPanel initialized successfully")
     }
     
     // Prevent panel from taking active focus away from current app (VS Code, browser, terminal, etc.)

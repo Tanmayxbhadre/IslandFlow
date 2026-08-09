@@ -24,7 +24,49 @@ public final class WindowManager: ObservableObject {
     // Duration ≈ spring response (0.26s). This keeps panel frame and SwiftUI shape in sync.
     private let animationDuration: TimeInterval = 0.26
 
-    private init() {}
+    private var isSpaceTransitioning: Bool = false
+    private var spaceLockTask: Task<Void, Never>?
+
+    private init() {
+        observeSpaceTransitions()
+    }
+
+    private func observeSpaceTransitions() {
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(handleSpaceChanged),
+            name: NSWorkspace.activeSpaceDidChangeNotification,
+            object: nil
+        )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleScreenParametersChanged),
+            name: NSApplication.didChangeScreenParametersNotification,
+            object: nil
+        )
+    }
+
+    @objc private func handleSpaceChanged() {
+        Task { @MainActor in
+            Logger.window.info("[IslandFlow][SPACE] Active space transition detected")
+            self.isSpaceTransitioning = true
+            self.spaceLockTask?.cancel()
+            self.spaceLockTask = Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 350_000_000) // 350 ms space transition lock
+                guard !Task.isCancelled else { return }
+                self.isSpaceTransitioning = false
+                Logger.window.info("[IslandFlow][SPACE] Space transition lock released")
+            }
+        }
+    }
+
+    @objc private func handleScreenParametersChanged() {
+        Task { @MainActor in
+            Logger.window.info("[IslandFlow][SCREEN] Screen parameters changed")
+            self.updatePanelFrame(for: AppState.shared.islandState)
+        }
+    }
 
     public func setupWindow() {
         guard panel == nil else { return }
@@ -78,19 +120,19 @@ public final class WindowManager: ObservableObject {
         """)
 
         Logger.window.info("""
-            [IslandFlow] Setup — screen:\(String(describing: metrics.screenFrame)) \
+            [IslandFlow][PANEL SHOW] Setup — screen:\(String(describing: metrics.screenFrame)) \
             hasNotch:\(metrics.hasNotch) notchW:\(metrics.notchWidth) \
             safeTop:\(metrics.safeAreaTopInset) initialFrame:\(String(describing: frame))
             """)
     }
 
     public func updatePanelFrame(for state: IslandState) {
-        guard let panel = panel else { return }
+        guard let panel = panel, !isSpaceTransitioning else { return }
         let metrics = ScreenManager.shared.activeScreenMetrics()
         let newFrame = panelFrame(for: state, metrics: metrics)
 
         Logger.window.debug("""
-            [IslandFlow] State→\(String(describing: state)) \
+            [IslandFlow][PANEL FRAME] State→\(String(describing: state)) \
             frame:\(String(describing: newFrame))
             """)
 

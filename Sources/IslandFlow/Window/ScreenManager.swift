@@ -29,10 +29,16 @@ public final class ScreenManager {
     private init() {}
     
     public func activeScreenMetrics() -> ScreenMetrics {
-        let mouseLocation = NSEvent.mouseLocation
-        let screen = NSScreen.screens.first { NSMouseInRect(mouseLocation, $0.frame, false) }
-            ?? NSScreen.main
-            ?? NSScreen.screens[0]
+        // Prefer the built-in notched display as the authoritative anchor for IslandFlow.
+        let screen: NSScreen
+        if #available(macOS 12.0, *), let notchScreen = NSScreen.screens.first(where: { $0.safeAreaInsets.top > 0 }) {
+            screen = notchScreen
+        } else {
+            let mouseLocation = NSEvent.mouseLocation
+            screen = NSScreen.screens.first { NSMouseInRect(mouseLocation, $0.frame, false) }
+                ?? NSScreen.main
+                ?? NSScreen.screens[0]
+        }
             
         let safeAreaTop: CGFloat
         if #available(macOS 12.0, *) {

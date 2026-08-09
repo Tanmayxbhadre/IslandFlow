@@ -14,6 +14,7 @@ public struct WindowConfiguration {
     public static let collectionBehavior: NSWindow.CollectionBehavior = [
         .canJoinAllSpaces,
         .fullScreenAuxiliary,
+        .stationary,
         .ignoresCycle
     ]
 }
