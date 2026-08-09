@@ -39,7 +39,8 @@ public struct IslandContainerView: View {
             expandedWidth:   expandedWidth,
             expandedHeight:  expandedHeight,
             collapsedRadius: collapsedRadius,
-            expandedRadius:  expandedRadius
+            expandedRadius:  expandedRadius,
+            topFlush:        metrics.hasNotch
         )
     }
 
@@ -56,17 +57,17 @@ public struct IslandContainerView: View {
     // MARK: — Derived appearance
 
     private var surfaceDecorationOpacity: Double {
-        max(0, min(1, (Double(expansionProgress) - 0.35) / 0.55))
+        max(0, min(1, (Double(expansionProgress) - 0.25) / 0.75))
     }
 
     private var contentOpacity: Double {
-        max(0, min(1, (Double(expansionProgress) - 0.45) / 0.30))
+        max(0, min(1, (Double(expansionProgress) - 0.40) / 0.40))
     }
 
     // MARK: — Body
 
     public var body: some View {
-        ZStack(alignment: .top) {
+        let content = ZStack(alignment: .top) {
             backgroundSurface
             contentLayer
             
@@ -83,20 +84,31 @@ public struct IslandContainerView: View {
         }
         .frame(width: expandedWidth, height: expandedHeight)
         .animation(islandAnimation, value: expansionProgress)
-        .onChange(of: expansionProgress) { newValue in
-            appState.expansionProgress = newValue
-            if newValue >= 0.999 {
-                interactionController.notifyExpandedComplete()
-            }
-        }
         .onReceive(interactionController.$state) { newState in
             handleInteractionStateChanged(newState)
         }
-        .onReceive(appState.$islandState) { newState in
-            handleContentStateChanged(newState)
-        }
         .contentShape(Rectangle())
         .onTapGesture { handleTapGesture() }
+
+        if #available(macOS 14.0, *) {
+            content.onChange(of: expansionProgress) { _, newValue in
+                appState.expansionProgress = newValue
+                if newValue >= 0.999 {
+                    interactionController.notifyExpandedComplete()
+                } else if newValue <= 0.001 {
+                    interactionController.notifyCollapsedComplete()
+                }
+            }
+        } else {
+            content.onChange(of: expansionProgress) { newValue in
+                appState.expansionProgress = newValue
+                if newValue >= 0.999 {
+                    interactionController.notifyExpandedComplete()
+                } else if newValue <= 0.001 {
+                    interactionController.notifyCollapsedComplete()
+                }
+            }
+        }
     }
 
     // MARK: — Background Surface
@@ -133,11 +145,25 @@ public struct IslandContainerView: View {
             Color.clear.frame(height: collapsedHeight)
 
             ZStack {
-                MediaView(state: mediaManager.currentState)
-                    .opacity(mediaManager.isMediaActive ? 1.0 : 0.0)
-
-                islandHoverHint
-                    .opacity(mediaManager.isMediaActive ? 0.0 : 1.0)
+                switch appState.islandState {
+                case .volume(let volumeState):
+                    VolumeView(state: volumeState)
+                        .transition(.opacity)
+                case .brightness(let brightnessState):
+                    BrightnessView(state: brightnessState)
+                        .transition(.opacity)
+                case .battery(let batteryState):
+                    BatteryView(state: batteryState)
+                        .transition(.opacity)
+                default:
+                    if mediaManager.isMediaActive {
+                        MediaView(state: mediaManager.currentState)
+                            .transition(.opacity)
+                    } else {
+                        islandHoverHint
+                            .transition(.opacity)
+                    }
+                }
             }
             .frame(width: expandedWidth, height: contentHeight)
         }
@@ -178,46 +204,27 @@ public struct IslandContainerView: View {
         _ newState: IslandInteractionController.InteractionState
     ) {
         switch newState {
-        case .opening:
+        case .opening, .expanded:
             appState.setHovered(true)
             expandContentState()
-            withAnimation(islandAnimation) {
-                expansionProgress = 1.0
-            }
-            Logger.window.info("[Island] geometry: expanding progress=1.0")
+            expansionProgress = 1.0
+            Logger.window.info("[Island] geometry: expanding target progress=1.0")
 
         case .closing, .collapsed:
             appState.setHovered(false)
             collapseContentState()
-            withAnimation(islandAnimation) {
-                expansionProgress = 0.0
-            }
-            Logger.window.info("[Island] geometry: collapsing progress=0.0 reason=VERIFIED_MOUSE_EXIT")
-
-        case .expanded:
-            break
-        }
-    }
-
-    // MARK: — Content State Handler
-
-    private func handleContentStateChanged(_ state: IslandState) {
-        switch state {
-        case .notchCover, .compact:
-            if interactionController.isInsideRegion {
-                Logger.window.warning("""
-                    [Island] Content state → collapsed while cursor inside region. \
-                    Ignored: geometry unchanged.
-                    """)
-            }
-        default:
-            break
+            expansionProgress = 0.0
+            Logger.window.info("[Island] geometry: collapsing target progress=0.0")
         }
     }
 
     // MARK: — Content state helpers
 
     private func expandContentState() {
+        if case .volume = appState.islandState { return }
+        if case .brightness = appState.islandState { return }
+        if case .battery = appState.islandState { return }
+
         if mediaManager.isMediaActive {
             appState.islandState = .mediaExpanded(mediaManager.currentState)
         } else {

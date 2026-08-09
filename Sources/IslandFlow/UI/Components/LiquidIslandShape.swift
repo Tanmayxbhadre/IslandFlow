@@ -38,6 +38,7 @@ public struct LiquidIslandShape: Shape {
     public let expandedHeight:  CGFloat
     public let collapsedRadius: CGFloat
     public let expandedRadius:  CGFloat
+    public let topFlush:        Bool
 
     // MARK: — Init
 
@@ -48,7 +49,8 @@ public struct LiquidIslandShape: Shape {
         expandedWidth:   CGFloat,
         expandedHeight:  CGFloat,
         collapsedRadius: CGFloat = 10.0,
-        expandedRadius:  CGFloat = 22.0
+        expandedRadius:  CGFloat = 22.0,
+        topFlush:        Bool = true
     ) {
         self.progress        = progress
         self.collapsedWidth  = collapsedWidth
@@ -57,6 +59,7 @@ public struct LiquidIslandShape: Shape {
         self.expandedHeight  = expandedHeight
         self.collapsedRadius = collapsedRadius
         self.expandedRadius  = expandedRadius
+        self.topFlush        = topFlush
     }
 
     // MARK: — Path
@@ -74,50 +77,51 @@ public struct LiquidIslandShape: Shape {
         )
 
         // ── Geometry anchored at top-center of host rect ─────────────────────
-        // minX expands symmetrically; minY is LOCKED to rect.minY (screen top).
         let xInset = (rect.width  - w) / 2.0
         let minX   = rect.minX + xInset
         let maxX   = minX + w
-        let minY   = rect.minY          // ← INVARIANT: never moves
+        let minY   = rect.minY          // ← INVARIANT: locked to top edge of panel
         let maxY   = minY + h           // ← grows downward
 
-        // Debug assertion (disabled in release)
-        assert(abs(minY - rect.minY) < 0.001, "LiquidIslandShape: top edge drifted!")
-
-        // ── Path: flat top + rounded bottom corners ─────────────────────────
         var path = Path()
 
-        // Top-left → top-right (flat, flush with screen bezel)
-        path.move(to:    CGPoint(x: minX, y: minY))
-        path.addLine(to: CGPoint(x: maxX, y: minY))
+        if topFlush {
+            // Top-left → top-right (flat, flush with screen bezel)
+            path.move(to:    CGPoint(x: minX, y: minY))
+            path.addLine(to: CGPoint(x: maxX, y: minY))
 
-        // Right side ↓ to bottom-right arc start
-        path.addLine(to: CGPoint(x: maxX, y: maxY - r))
+            // Right side ↓ to bottom-right arc start
+            path.addLine(to: CGPoint(x: maxX, y: maxY - r))
 
-        // Bottom-right corner arc (0° → 90°, clockwise = false in SwiftUI's flipped space)
-        path.addArc(
-            center:     CGPoint(x: maxX - r, y: maxY - r),
-            radius:     r,
-            startAngle: .radians(0),
-            endAngle:   .radians(.pi / 2),
-            clockwise:  false
-        )
+            // Bottom-right corner arc
+            path.addArc(
+                center:     CGPoint(x: maxX - r, y: maxY - r),
+                radius:     r,
+                startAngle: .radians(0),
+                endAngle:   .radians(.pi / 2),
+                clockwise:  false
+            )
 
-        // Bottom edge ← to bottom-left arc start
-        path.addLine(to: CGPoint(x: minX + r, y: maxY))
+            // Bottom edge ← to bottom-left arc start
+            path.addLine(to: CGPoint(x: minX + r, y: maxY))
 
-        // Bottom-left corner arc (90° → 180°)
-        path.addArc(
-            center:     CGPoint(x: minX + r, y: maxY - r),
-            radius:     r,
-            startAngle: .radians(.pi / 2),
-            endAngle:   .radians(.pi),
-            clockwise:  false
-        )
+            // Bottom-left corner arc
+            path.addArc(
+                center:     CGPoint(x: minX + r, y: maxY - r),
+                radius:     r,
+                startAngle: .radians(.pi / 2),
+                endAngle:   .radians(.pi),
+                clockwise:  false
+            )
 
-        // Left side ↑ back to top-left
-        path.addLine(to: CGPoint(x: minX, y: minY))
-        path.closeSubpath()
+            // Left side ↑ back to top-left
+            path.addLine(to: CGPoint(x: minX, y: minY))
+            path.closeSubpath()
+        } else {
+            // Non-notch mode: rounded rectangle floating below menu bar
+            let targetRect = CGRect(x: minX, y: minY, width: w, height: h)
+            path.addRoundedRect(in: targetRect, cornerSize: CGSize(width: r, height: r), style: .continuous)
+        }
 
         return path
     }

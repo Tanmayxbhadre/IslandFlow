@@ -44,6 +44,13 @@
     "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeManager.swiftdeps",
     "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeManager.dia"
   },
+  "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/AppSettings.swift": {
+    "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/AppSettings.d",
+    "object": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/AppSettings.swift.o",
+    "swiftmodule": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/AppSettings~partial.swiftmodule",
+    "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/AppSettings.swiftdeps",
+    "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/AppSettings.dia"
+  },
   "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/BatteryState.swift": {
     "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryState.d",
     "object": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryState.swift.o",
@@ -177,12 +184,26 @@
     "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaView.swiftdeps",
     "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaView.dia"
   },
+  "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/PreferencesView.swift": {
+    "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/PreferencesView.d",
+    "object": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/PreferencesView.swift.o",
+    "swiftmodule": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/PreferencesView~partial.swiftmodule",
+    "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/PreferencesView.swiftdeps",
+    "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/PreferencesView.dia"
+  },
   "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/VolumeView.swift": {
     "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeView.d",
     "object": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeView.swift.o",
     "swiftmodule": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeView~partial.swiftmodule",
     "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeView.swiftdeps",
     "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeView.dia"
+  },
+  "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/WelcomeView.swift": {
+    "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/WelcomeView.d",
+    "object": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/WelcomeView.swift.o",
+    "swiftmodule": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/WelcomeView~partial.swiftmodule",
+    "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/WelcomeView.swiftdeps",
+    "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/WelcomeView.dia"
   },
   "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/Logger.swift": {
     "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/Logger.d",
@@ -211,6 +232,13 @@
     "swiftmodule": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandPanel~partial.swiftmodule",
     "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandPanel.swiftdeps",
     "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandPanel.dia"
+  },
+  "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/PreferencesWindowController.swift": {
+    "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/PreferencesWindowController.d",
+    "object": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/PreferencesWindowController.swift.o",
+    "swiftmodule": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/PreferencesWindowController~partial.swiftmodule",
+    "swift-dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/PreferencesWindowController.swiftdeps",
+    "diagnostics": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/PreferencesWindowController.dia"
   },
   "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/ScreenManager.swift": {
     "dependencies": "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/ScreenManager.d",

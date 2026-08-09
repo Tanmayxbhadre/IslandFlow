@@ -107,11 +107,13 @@ public final class IslandInteractionController: ObservableObject {
             : metrics.visibleFrame.maxY - eh - 4.0
         baseExpandedRegion = NSRect(x: ex, y: ey, width: ew, height: eh)
 
-        // 2. Notch Region
-        let nw = metrics.notchWidth
-        let nh = metrics.safeAreaTopInset
+        // 2. Notch Region (uses safeAreaTopInset if available, otherwise 32.0 for floating mode)
+        let nw = metrics.hasNotch ? metrics.notchWidth : 160.0
+        let nh = metrics.hasNotch ? metrics.safeAreaTopInset : 32.0
         let nx = cx - nw / 2.0
-        let ny = metrics.screenFrame.maxY - nh
+        let ny = metrics.hasNotch
+            ? metrics.screenFrame.maxY - nh
+            : metrics.visibleFrame.maxY - nh - 4.0
         baseNotchRegion = NSRect(x: nx, y: ny, width: nw, height: nh)
     }
 
@@ -216,14 +218,14 @@ public final class IslandInteractionController: ObservableObject {
     private func scheduleOpen() {
         let settings = HoverSettings.shared
         guard settings.openOnNotchHover else { return }
-        guard state == .collapsed else { return }
+        guard state == .collapsed || state == .closing else { return }
         guard !isPendingOpen else { return }
 
         closeTask?.cancel()
         closeTask = nil
         isPendingClose = false
 
-        if settings.openDelay <= 0 {
+        if settings.openDelay <= 0 || state == .closing {
             executeOpen()
             return
         }
@@ -273,6 +275,13 @@ public final class IslandInteractionController: ObservableObject {
         }
     }
 
+    public func notifyCollapsedComplete() {
+        if state == .closing {
+            state = .collapsed
+            Logger.window.info("[Hover] COLLAPSED")
+        }
+    }
+
     // MARK: — Close Sequence (with Close Delay + Grace Period)
 
     private func scheduleClose() {
@@ -286,7 +295,6 @@ public final class IslandInteractionController: ObservableObject {
 
         let totalDelayMs = settings.closeDelay + settings.hoverGracePeriod
         isPendingClose = true
-        state = .closing
         Logger.window.debug("[Hover] EXIT_DETECTED -> CLOSE_DELAY_STARTED totalMs=\(totalDelayMs)")
 
         closeTask?.cancel()
@@ -305,7 +313,7 @@ public final class IslandInteractionController: ObservableObject {
             let loc = NSEvent.mouseLocation
             if self.activeInteractionRegion.contains(loc) {
                 Logger.window.debug("[Hover] CLOSE_CANCELLED reason=cursorReturnedDuringGrace")
-                self.state = .expanded
+                self.state = .opening
                 return
             }
 
@@ -318,8 +326,8 @@ public final class IslandInteractionController: ObservableObject {
         closeTask = nil
         if isPendingClose || state == .closing {
             isPendingClose = false
-            state = .expanded
-            Logger.window.debug("[Hover] CLOSE_CANCELLED reason=\(reason)")
+            state = .opening
+            Logger.window.debug("[Hover] CLOSE_CANCELLED -> OPENING reason=\(reason)")
         }
     }
 
@@ -332,8 +340,8 @@ public final class IslandInteractionController: ObservableObject {
         isPendingClose = false
 
         lastCollapseReason = reason
-        state = .collapsed
-        Logger.window.info("[Hover] COLLAPSE reason=\(reason.description)")
+        state = .closing
+        Logger.window.info("[Hover] COLLAPSE -> CLOSING reason=\(reason.description)")
     }
 
     // MARK: — Manual Toggle (⌘E)
