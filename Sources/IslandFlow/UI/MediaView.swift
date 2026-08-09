@@ -1,23 +1,38 @@
 import SwiftUI
 
-/// MediaView — the expanded media controls rendered in the island content zone.
+/// Tactile button style for macOS control buttons with subtle scale and opacity feedback
+public struct TactileControlButtonStyle: ButtonStyle {
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.90 : 1.0)
+            .opacity(configuration.isPressed ? 0.70 : 1.0)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
+/// MediaView — production-grade expanded media controls rendered in the island content zone.
 ///
-/// Phase 8 note: This view is always mounted in the hierarchy. The parent
-/// (IslandContainerView) places it in the content zone:
-///   y = collapsedHeight (32pt) → y = expandedHeight (145pt)
-///   available height = expandedHeight - collapsedHeight = 113pt
-///
-/// This view fills that 113pt zone. No content will appear above y=32 in
-/// the panel — safely below the physical camera notch.
+/// Phase 12 Model:
+///   • Atomic state display with zero content mix-and-match.
+///   • Smooth artwork crossfade transition & non-blocking async image loading.
+///   • Robust time formatting (MM:SS and HH:MM:SS) with NaN & infinity safety.
+///   • Single-line truncation for track title & artist (never alters island geometry).
+///   • Tactile micro-interaction feedback for playback controls without affecting hover state.
 public struct MediaView: View {
     let state: MediaState
     @ObservedObject private var mediaManager = MediaManager.shared
 
     private func formatTime(_ time: TimeInterval) -> String {
-        guard time > 0 && !time.isNaN else { return "0:00" }
-        let minutes = Int(time) / 60
-        let seconds = Int(time) % 60
-        return String(format: "%d:%02d", minutes, seconds)
+        guard time > 0 && !time.isNaN && !time.isInfinite else { return "0:00" }
+        let totalSeconds = Int(time)
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let seconds = totalSeconds % 60
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            return String(format: "%d:%02d", minutes, seconds)
+        }
     }
 
     public var body: some View {
@@ -27,16 +42,16 @@ public struct MediaView: View {
                 artworkView
                     .frame(width: 42, height: 42)
                     .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
-                    .shadow(color: .black.opacity(0.30), radius: 3, x: 0, y: 2)
+                    .shadow(color: .black.opacity(0.35), radius: 4, x: 0, y: 2)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(state.title)
+                    Text(state.title.isEmpty ? "No Track" : state.title)
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                         .lineLimit(1)
                         .truncationMode(.tail)
 
-                    Text(state.artist)
+                    Text(state.artist.isEmpty ? "Unknown Artist" : state.artist)
                         .font(.system(size: 11, weight: .medium, design: .rounded))
                         .foregroundColor(.white.opacity(0.65))
                         .lineLimit(1)
@@ -59,7 +74,7 @@ public struct MediaView: View {
                 Text(formatTime(state.currentTime))
                     .font(.system(size: 10, weight: .semibold, design: .monospaced))
                     .foregroundColor(.white.opacity(0.55))
-                    .frame(width: 30, alignment: .leading)
+                    .frame(width: 32, alignment: .leading)
 
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
@@ -85,7 +100,7 @@ public struct MediaView: View {
                 Text("-" + formatTime(remaining))
                     .font(.system(size: 10, weight: .semibold, design: .monospaced))
                     .foregroundColor(.white.opacity(0.55))
-                    .frame(width: 36, alignment: .trailing)
+                    .frame(width: 38, alignment: .trailing)
             }
 
             // ── Playback Controls ──────────────────────────────────────────
@@ -96,8 +111,9 @@ public struct MediaView: View {
                     Image(systemName: "backward.fill")
                         .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.white.opacity(0.85))
+                        .frame(width: 24, height: 24)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(TactileControlButtonStyle())
                 .accessibilityLabel("Previous Track")
 
                 Button(action: { mediaManager.togglePlayPause() }) {
@@ -105,53 +121,56 @@ public struct MediaView: View {
                         Circle()
                             .fill(Color.white)
                             .frame(width: 30, height: 30)
+                            .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 1)
                         Image(systemName: state.isPlaying ? "pause.fill" : "play.fill")
                             .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.black)
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(TactileControlButtonStyle())
                 .accessibilityLabel(state.isPlaying ? "Pause" : "Play")
 
                 Button(action: { mediaManager.nextTrack() }) {
                     Image(systemName: "forward.fill")
                         .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.white.opacity(0.85))
+                        .frame(width: 24, height: 24)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(TactileControlButtonStyle())
                 .accessibilityLabel("Next Track")
 
                 Spacer()
             }
         }
-        // Horizontal padding within the content zone.
         .padding(.horizontal, 14)
-        // Vertical padding within the 113pt content zone.
-        // Top: 8pt below notch safe line. Bottom: 8pt above island edge.
         .padding(.top, 7)
         .padding(.bottom, 7)
-        // Fill the content zone provided by IslandContainerView.
-        // Width = expandedWidth = 350pt. Height = contentHeight = 113pt.
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     @ViewBuilder
     private var artworkView: some View {
-        if let artwork = state.artwork {
-            Image(nsImage: artwork)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-        } else {
-            ZStack {
-                LinearGradient(
-                    colors: [.cyan.opacity(0.60), .blue.opacity(0.80)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                Image(systemName: "music.note")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.white)
+        ZStack {
+            if let artwork = state.artwork {
+                Image(nsImage: artwork)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .transition(.opacity)
+            } else {
+                ZStack {
+                    LinearGradient(
+                        colors: [.cyan.opacity(0.60), .blue.opacity(0.80)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    Image(systemName: "music.note")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
+                }
+                .transition(.opacity)
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: state.artwork)
+        .id("\(state.title):\(state.artist)")
     }
 }
