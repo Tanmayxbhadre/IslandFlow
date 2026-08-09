@@ -19,28 +19,32 @@ public enum IslandState: Equatable {
     // MARK: — Size
 
     public var size: CGSize {
+        let metrics = ScreenManager.shared.activeScreenMetrics()
         switch self {
         case .notchCover:
-            let metrics = ScreenManager.shared.activeScreenMetrics()
-            let w = metrics.hasNotch ? max(metrics.notchWidth + 4.0, 180.0) : 140.0
-            let h = metrics.hasNotch ? max(metrics.safeAreaTopInset, 34.0)  : 32.0
+            let w = metrics.hasNotch ? metrics.notchWidth : 140.0
+            let h = metrics.hasNotch ? metrics.safeAreaTopInset : 32.0
             return CGSize(width: w, height: h)
         case .hover:
-            return CGSize(width: 240, height: 44)
+            let w = metrics.hasNotch ? max(metrics.notchWidth + 40.0, 220.0) : 220.0
+            let h = metrics.hasNotch ? max(metrics.safeAreaTopInset + 8.0, 40.0) : 38.0
+            return CGSize(width: w, height: h)
         case .compact:
-            return CGSize(width: 140, height: 32)
+            return CGSize(width: 140.0, height: 32.0)
         case .expanded:
-            return CGSize(width: 330, height: 110)
+            return CGSize(width: 320.0, height: 125.0)
         case .mediaCompact:
-            return CGSize(width: 210, height: 36)
+            let w = metrics.hasNotch ? max(metrics.notchWidth + 24.0, 195.0) : 180.0
+            let h = metrics.hasNotch ? metrics.safeAreaTopInset : 34.0
+            return CGSize(width: w, height: h)
         case .mediaExpanded:
-            return CGSize(width: 360, height: 155)
+            return CGSize(width: 350.0, height: 145.0)
         case .battery:
-            return CGSize(width: 230, height: 42)
+            return CGSize(width: 230.0, height: 40.0)
         case .volume:
-            return CGSize(width: 240, height: 42)
+            return CGSize(width: 240.0, height: 40.0)
         case .brightness:
-            return CGSize(width: 240, height: 42)
+            return CGSize(width: 240.0, height: 40.0)
         }
     }
 

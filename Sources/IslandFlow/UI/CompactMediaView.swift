@@ -31,8 +31,8 @@ public struct CompactMediaView: View {
                 .font(.system(size: 10, weight: .bold))
                 .foregroundColor(state.isPlaying ? .cyan : .white.opacity(0.7))
         }
-        .padding(.horizontal, 12)
-        .frame(height: 36)
+        .padding(.horizontal, 10)
+        .frame(height: IslandState.mediaCompact(state).size.height)
         .accessibilityLabel("Media: \(state.title) by \(state.artist)")
     }
 }

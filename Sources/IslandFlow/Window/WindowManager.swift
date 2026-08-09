@@ -50,6 +50,33 @@ public final class WindowManager: ObservableObject {
             }
             .store(in: &cancellables)
 
+        let collapsedFrame = panelFrame(for: .notchCover, metrics: metrics)
+        let expandedFrame = panelFrame(for: .mediaExpanded(MediaState()), metrics: metrics)
+
+        print("""
+        ============================================================
+        ISLANDFLOW DIAGNOSTIC GEOMETRY REPORT
+        ============================================================
+        SCREEN FRAME: x:\(metrics.screenFrame.origin.x) y:\(metrics.screenFrame.origin.y) width:\(metrics.screenFrame.width) height:\(metrics.screenFrame.height)
+        VISIBLE FRAME: x:\(metrics.visibleFrame.origin.x) y:\(metrics.visibleFrame.origin.y) width:\(metrics.visibleFrame.width) height:\(metrics.visibleFrame.height)
+        SCALE FACTOR: \(metrics.targetScreen.backingScaleFactor)
+        HAS NOTCH: \(metrics.hasNotch)
+        SAFE AREA TOP INSET: \(metrics.safeAreaTopInset)
+        COMPUTED NOTCH WIDTH: \(metrics.notchWidth)
+        
+        ISLAND COLLAPSED STATE (.notchCover): \(IslandState.notchCover.size)
+        ISLAND COLLAPSED FRAME: \(collapsedFrame)
+        
+        ISLAND MEDIA COMPACT STATE: \(IslandState.mediaCompact(MediaState()).size)
+        ISLAND MEDIA COMPACT FRAME: \(panelFrame(for: .mediaCompact(MediaState()), metrics: metrics))
+        
+        ISLAND EXPANDED STATE (.mediaExpanded): \(IslandState.mediaExpanded(MediaState()).size)
+        ISLAND EXPANDED FRAME: \(expandedFrame)
+        
+        INITIAL PANEL FRAME: \(frame)
+        ============================================================
+        """)
+
         Logger.window.info("""
             [IslandFlow] Setup — screen:\(String(describing: metrics.screenFrame)) \
             hasNotch:\(metrics.hasNotch) notchW:\(metrics.notchWidth) \
