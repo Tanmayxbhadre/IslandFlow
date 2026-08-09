@@ -46,6 +46,26 @@ echo "--> Staging archive contents..."
 cp -R "$APP_SOURCE" "$DMG_STAGING_DIR/"
 ln -s /Applications "$DMG_STAGING_DIR/Applications"
 
+# Add 1-click Installer helper for macOS Sequoia / Sonoma Gatekeeper
+cat << 'EOF' > "$DMG_STAGING_DIR/Install IslandFlow.command"
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+echo "============================================================"
+echo "          ISLANDFLOW AUTOMATED MAC INSTALLER               "
+echo "============================================================"
+echo "Installing IslandFlow to /Applications..."
+rm -rf /Applications/IslandFlow.app
+cp -R "$SCRIPT_DIR/IslandFlow.app" /Applications/
+echo "Clearing macOS Gatekeeper quarantine flag..."
+xattr -cr /Applications/IslandFlow.app
+echo "Launching IslandFlow..."
+open /Applications/IslandFlow.app
+echo "============================================================"
+echo "IslandFlow installed and launched successfully!"
+echo "You may close this terminal window."
+EOF
+chmod +x "$DMG_STAGING_DIR/Install IslandFlow.command"
+
 # 1. Ensure app is ad-hoc signed and verified before packaging
 echo "--> Cleaning extended attributes & applying ad-hoc code signature..."
 xattr -cr "$DMG_STAGING_DIR/$APP_NAME"
