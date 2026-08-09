@@ -56,6 +56,10 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/HoverSettings.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/IslandState.swift"
         },
         {
@@ -68,7 +72,15 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SimulationController.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SystemHUDController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SystemStateController.swift"
         },
         {
           "kind" : "file",
@@ -85,6 +97,14 @@
         {
           "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/CompactMediaView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/Components/HoverDebugView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/Components/LiquidIslandShape.swift"
         },
         {
           "kind" : "file",
@@ -113,6 +133,10 @@
         {
           "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/SystemEventSimulator.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/IslandInteractionController.swift"
         },
         {
           "kind" : "file",
@@ -151,14 +175,19 @@
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeManager.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryState.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessState.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/HoverSettings.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandState.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/MediaState.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeState.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SimulationController.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemHUDController.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemStateController.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BatteryView.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/BrightnessView.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/CompactIslandView.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/CompactMediaView.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/HoverDebugView.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/LiquidIslandShape.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/NotchCoverShape.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/ExpandedIslandView.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandContainerView.swift.o",
@@ -166,6 +195,7 @@
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/VolumeView.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/Logger.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemEventSimulator.swift.o",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandInteractionController.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandPanel.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/ScreenManager.swift.o",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/WindowConfiguration.swift.o",
@@ -251,6 +281,10 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/HoverSettings.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandState.swift.o"
         },
         {
@@ -263,7 +297,15 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SimulationController.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemHUDController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemStateController.swift.o"
         },
         {
           "kind" : "file",
@@ -280,6 +322,14 @@
         {
           "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/CompactMediaView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/HoverDebugView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/LiquidIslandShape.swift.o"
         },
         {
           "kind" : "file",
@@ -308,6 +358,10 @@
         {
           "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemEventSimulator.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandInteractionController.swift.o"
         },
         {
           "kind" : "file",
@@ -340,14 +394,19 @@
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/VolumeManager.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/BatteryState.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/BrightnessState.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/HoverSettings.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/IslandState.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/MediaState.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/VolumeState.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SimulationController.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SystemHUDController.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SystemStateController.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/BatteryView.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/BrightnessView.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/CompactIslandView.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/CompactMediaView.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/Components/HoverDebugView.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/Components/LiquidIslandShape.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/Components/NotchCoverShape.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/ExpandedIslandView.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/IslandContainerView.swift",
@@ -355,6 +414,7 @@
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/VolumeView.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/Logger.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/SystemEventSimulator.swift",
+        "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/IslandInteractionController.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/IslandPanel.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/ScreenManager.swift",
         "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/WindowConfiguration.swift",
@@ -383,14 +443,19 @@
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Managers/VolumeManager.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/BatteryState.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/BrightnessState.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/HoverSettings.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/IslandState.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/MediaState.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/VolumeState.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SimulationController.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SystemHUDController.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SystemStateController.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/BatteryView.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/BrightnessView.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/CompactIslandView.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/CompactMediaView.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/Components/HoverDebugView.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/Components/LiquidIslandShape.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/Components/NotchCoverShape.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/ExpandedIslandView.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/IslandContainerView.swift",
@@ -398,6 +463,7 @@
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/VolumeView.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/Logger.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/SystemEventSimulator.swift",
+      "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/IslandInteractionController.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/IslandPanel.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/ScreenManager.swift",
       "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/WindowConfiguration.swift",
@@ -522,6 +588,10 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/HoverSettings.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Models/IslandState.swift"
         },
         {
@@ -534,7 +604,15 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SimulationController.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SystemHUDController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Services/SystemStateController.swift"
         },
         {
           "kind" : "file",
@@ -551,6 +629,14 @@
         {
           "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/CompactMediaView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/Components/HoverDebugView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/UI/Components/LiquidIslandShape.swift"
         },
         {
           "kind" : "file",
@@ -579,6 +665,10 @@
         {
           "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Utilities/SystemEventSimulator.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/Sources/IslandFlow/Window/IslandInteractionController.swift"
         },
         {
           "kind" : "file",
@@ -648,6 +738,14 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/HoverDebugView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/HoverSettings.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandContainerView.swift.o"
         },
         {
@@ -656,11 +754,19 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandInteractionController.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandPanel.swift.o"
         },
         {
           "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/IslandState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/LiquidIslandShape.swift.o"
         },
         {
           "kind" : "file",
@@ -688,11 +794,19 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SimulationController.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemEventSimulator.swift.o"
         },
         {
           "kind" : "file",
           "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemHUDController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/tanmaay/Documents/Tanmay/IslandFlow/.build/arm64-apple-macosx/debug/IslandFlow.build/SystemStateController.swift.o"
         },
         {
           "kind" : "file",
