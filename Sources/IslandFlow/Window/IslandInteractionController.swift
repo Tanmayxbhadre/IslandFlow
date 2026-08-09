@@ -131,11 +131,14 @@ public final class IslandInteractionController: ObservableObject {
                 return notchPadded.union(expandedPadded)
             }
         } else {
-            if settings.keepOpenInsideIsland {
-                return notchPadded.union(expandedPadded)
-            } else {
-                return notchPadded
-            }
+            // When open/opening/closing: apply 10pt spatial grace margin downward
+            let baseRegion = settings.keepOpenInsideIsland ? notchPadded.union(expandedPadded) : notchPadded
+            return NSRect(
+                x: baseRegion.minX,
+                y: baseRegion.minY - 10.0,
+                width: baseRegion.width,
+                height: baseRegion.height + 10.0
+            )
         }
     }
 
