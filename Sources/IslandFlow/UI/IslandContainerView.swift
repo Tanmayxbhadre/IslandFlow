@@ -93,23 +93,37 @@ public struct IslandContainerView: View {
         .contentShape(Rectangle())
     }
 
+    private var isExpandedState: Bool {
+        switch appState.islandState {
+        case .expanded, .mediaExpanded:
+            return true
+        default:
+            return false
+        }
+    }
+
+    private var isHoveredOrExpanded: Bool {
+        appState.isHovered || isExpandedState
+    }
+
     // MARK: — Background Surface
 
     @ViewBuilder
     private var backgroundSurface: some View {
-        if appState.islandState == .notchCover {
-            // Pure solid black — indistinguishable from physical MacBook notch.
+        if !isHoveredOrExpanded {
+            // Pure solid black — indistinguishable from physical MacBook notch cutout.
+            // NO white stroke outline, NO material overlay, NO drop shadow.
             islandShape
                 .fill(Color.black)
         } else {
-            // Unified island surface. ONE shape, ONE material.
+            // Unified expanded island surface. Smooth material depth + subtle stroke outline.
             islandShape
                 .fill(.ultraThinMaterial)
-                .overlay(islandShape.fill(Color.black.opacity(0.88)))
+                .overlay(islandShape.fill(Color.black.opacity(0.92)))
                 .overlay(
                     islandShape.stroke(
                         LinearGradient(
-                            colors: [.white.opacity(0.20), .white.opacity(0.03)],
+                            colors: [.white.opacity(0.18), .white.opacity(0.02)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
@@ -117,9 +131,9 @@ public struct IslandContainerView: View {
                     )
                 )
                 .shadow(
-                    color: .black.opacity(0.45),
-                    radius: appState.isHovered ? 10 : 5,
-                    x: 0, y: 2
+                    color: .black.opacity(0.40),
+                    radius: 8,
+                    x: 0, y: 3
                 )
         }
     }

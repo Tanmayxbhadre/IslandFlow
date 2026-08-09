@@ -42,7 +42,7 @@ public final class ScreenManager {
         }
         
         let hasNotch = safeAreaTop > 0
-        var computedNotchWidth: CGFloat = 185.0
+        var computedNotchWidth: CGFloat = (safeAreaTop > 36.0) ? 200.0 : 173.0
         
         if #available(macOS 12.0, *) {
             if let topLeft = screen.auxiliaryTopLeftArea, let topRight = screen.auxiliaryTopRightArea {
