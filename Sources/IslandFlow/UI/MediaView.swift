@@ -7,7 +7,17 @@ public struct TactileControlButtonStyle: ButtonStyle {
             .opacity(configuration.isPressed ? 0.75 : 1.0)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
-}iaState
+}
+
+/// MediaView — Refined Apple-grade expanded media controls for IslandFlow.
+///
+/// Refined Design Features:
+///   • 46x46 square artwork with rounded continuous corners & ambient drop shadow.
+///   • Crisp typography hierarchy with tail truncation for long track/artist names.
+///   • Interactive progress bar supporting direct tap & drag seeking.
+///   • Symmetrical, horizontally centered playback controls with 38px primary Play/Pause.
+public struct MediaView: View {
+    let state: MediaState
     @ObservedObject private var mediaManager = MediaManager.shared
     @ObservedObject private var appSettings  = AppSettings.shared
 
